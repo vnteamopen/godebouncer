@@ -1,4 +1,4 @@
-package godebounce
+package godebouncer
 
 import (
 	"time"
@@ -6,8 +6,8 @@ import (
 
 type Debounce struct {
 	timeDuration time.Duration
-	timer *time.Timer
-	trigger func()
+	timer        *time.Timer
+	trigger      func()
 }
 
 func New(duration time.Duration) *Debounce {
@@ -25,6 +25,6 @@ func (d *Debounce) Do(action func()) {
 	if d.timer != nil {
 		d.timer.Stop()
 	}
-	
+
 	d.timer = time.AfterFunc(d.timeDuration, d.trigger)
 }
