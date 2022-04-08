@@ -1,4 +1,4 @@
-package godebounce
+package godebouncer
 
 import (
 	"time"
