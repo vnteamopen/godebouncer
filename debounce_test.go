@@ -78,7 +78,7 @@ func TestDebounceDoAfterExpired(t *testing.T) {
 }
 
 
-func TestDeounceMixed(t *testing.T) {
+func TestDebounceMixed(t *testing.T) {
 	counter := 0
 	trigger := func() {
 		fmt.Println("Trigger")
