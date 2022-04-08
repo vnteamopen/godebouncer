@@ -19,12 +19,14 @@ func (d *Debouncer) WithTriggered(triggeredFunc func()) *Debouncer {
 	return d
 }
 
-func (d *Debouncer) Do(signalFunc func()) {
-	signalFunc()
-
+func (d *Debouncer) SendSignal() {
 	if d.timer != nil {
 		d.timer.Stop()
 	}
-
 	d.timer = time.AfterFunc(d.timeDuration, d.triggeredFunc)
+}
+
+func (d *Debouncer) Do(signalFunc func()) {
+	signalFunc()
+	d.SendSignal()
 }
