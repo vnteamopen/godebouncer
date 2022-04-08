@@ -28,12 +28,8 @@ func Example() {
 }
 
 func TestDebounceDoBeforeExpired(t *testing.T) {
-	counter := 0
-	trigger := func() {
-		fmt.Println("Trigger")
-		counter++
-	}
-	debounce := godebounce.New(3 * time.Millisecond).WithTrigger(trigger)
+	countPointer, incrementCount := createIncrementCount(0)
+	debounce := godebounce.New(3 * time.Millisecond).WithTrigger(incrementCount)
 
 	debounce.Do(func() {
 		fmt.Println("Action 1")
@@ -47,18 +43,14 @@ func TestDebounceDoBeforeExpired(t *testing.T) {
 
 	time.Sleep(4 * time.Millisecond)
 
-	if counter != 1 {
-		t.Error("Expected count 1, was ", counter)
+	if *countPointer != 1 {
+		t.Error("Expected count 1, was ", *countPointer)
 	}
 }
 
 func TestDebounceDoAfterExpired(t *testing.T) {
-	counter := 0
-	trigger := func() {
-		fmt.Println("Trigger")
-		counter++
-	}
-	debounce := godebounce.New(3 * time.Millisecond).WithTrigger(trigger)
+	countPointer, incrementCount := createIncrementCount(0)
+	debounce := godebounce.New(3 * time.Millisecond).WithTrigger(incrementCount)
 
 	debounce.Do(func() {
 		fmt.Println("Action 1")
@@ -72,19 +64,15 @@ func TestDebounceDoAfterExpired(t *testing.T) {
 
 	time.Sleep(4 * time.Millisecond)
 
-	if counter != 2 {
-		t.Error("Expected count 2, was ", counter)
+	if *countPointer != 2 {
+		t.Error("Expected count 2, was ", *countPointer)
 	}
 }
 
 
 func TestDebounceMixed(t *testing.T) {
-	counter := 0
-	trigger := func() {
-		fmt.Println("Trigger")
-		counter++
-	}
-	debounce := godebounce.New(3 * time.Millisecond).WithTrigger(trigger)
+	countPointer, incrementCount := createIncrementCount(0)
+	debounce := godebounce.New(3 * time.Millisecond).WithTrigger(incrementCount)
 
 	debounce.Do(func() {
 		fmt.Println("Action 1")
@@ -102,12 +90,12 @@ func TestDebounceMixed(t *testing.T) {
 
 	time.Sleep(4 * time.Millisecond)
 
-	if counter != 2 {
-		t.Error("Expected count 2, was ", counter)
+	if *countPointer != 2 {
+		t.Error("Expected count 2, was ", *countPointer)
 	}
 }
 
-func TestDebounceWithoutTrigger(t *testing.T) {
+func TestDebounceWithoutTriggeredFunc(t *testing.T) {
 	debounce := godebounce.New(3 * time.Millisecond)
 
 	debounce.Do(func() {
@@ -115,4 +103,11 @@ func TestDebounceWithoutTrigger(t *testing.T) {
 	})
 	time.Sleep(4 * time.Millisecond)
 	fmt.Println("debounce.Do() finished successfully!")
+}
+
+func createIncrementCount(counter int) (*int, func()) {
+	return &counter, func() {
+		fmt.Println("Triggered")
+		counter++
+	}
 }
