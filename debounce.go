@@ -11,7 +11,10 @@ type Debounce struct {
 }
 
 func New(duration time.Duration) *Debounce {
-	return &Debounce{timeDuration: duration}
+	return &Debounce{
+		timeDuration: duration,
+		trigger: func() {},
+	}
 }
 
 func (d *Debounce) WithTrigger(triggerFunc func()) *Debounce {

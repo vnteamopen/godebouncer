@@ -105,3 +105,13 @@ func TestDeounceMixed(t *testing.T) {
 			t.Error("Expected count 2, was ", counter)
 	}
 }
+
+func TestDebounceWithoutTrigger(t *testing.T) {
+	debounce := godebounce.New(3 * time.Millisecond)
+
+	debounce.Do(func() {
+		fmt.Println("Action 1")
+	})
+	time.Sleep(4 * time.Millisecond)
+	fmt.Println("debounce.Do() finished successfully!")
+}
