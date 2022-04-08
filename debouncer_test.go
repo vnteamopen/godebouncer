@@ -1,11 +1,9 @@
-package godebounce_test
+package godebouncer_test
 
 import (
 	"fmt"
 	"testing"
 	"time"
-
-	"github.com/vnteamopen/godebounce"
 )
 
 func Example() {
@@ -37,50 +35,52 @@ var resetCounter = func() {
 
 func TestDebounceDoBeforeExpired(t *testing.T) {
 	resetCounter()
-	debounce := godebounce.New(3 * time.Millisecond).WithTriggered(triggeredFunc)
+	debounce := godebounce.New(200 * time.Millisecond).WithTriggered(triggeredFunc)
+	expectedCounter := uint64(1)
 
 	debounce.Do(func() {
 		fmt.Println("Action 1")
 	})
 
-	time.Sleep(2 * time.Millisecond)
+	time.Sleep(100 * time.Millisecond)
 
 	debounce.Do(func() {
 		fmt.Println("Action 2")
 	})
 
-	time.Sleep(4 * time.Millisecond)
+	time.Sleep(300 * time.Millisecond)
 
-	if counter != 1 {
-		t.Error("Expected count 1, was ", counter)
+	if counter != expectedCounter {
+		t.Errorf("Expected count %d, was %d", expectedCounter, counter)
 	}
 }
 
 func TestDebounceDoAfterExpired(t *testing.T) {
 	resetCounter()
-	debounce := godebounce.New(3 * time.Millisecond).WithTriggered(triggeredFunc)
+	debounce := godebounce.New(200 * time.Millisecond).WithTriggered(triggeredFunc)
+	expectedCounter := uint64(2)
 
 	debounce.Do(func() {
 		fmt.Println("Action 1")
 	})
 
-	time.Sleep(4 * time.Millisecond)
+	time.Sleep(300 * time.Millisecond)
 
 	debounce.Do(func() {
 		fmt.Println("Action 2")
 	})
 
-	time.Sleep(4 * time.Millisecond)
+	time.Sleep(300 * time.Millisecond)
 
-	if counter != 2 {
-		t.Error("Expected count 2, was ", counter)
+	if counter != expectedCounter {
+		t.Errorf("Expected count %d, was %d", expectedCounter, counter)
 	}
 }
 
 func TestDeounceMixed(t *testing.T) {
 	resetCounter()
-
-	debounce := godebounce.New(3 * time.Millisecond).WithTriggered(triggeredFunc)
+	debounce := godebounce.New(200 * time.Millisecond).WithTriggered(triggeredFunc)
+	expectedCounter := uint64(2)
 
 	debounce.Do(func() {
 		fmt.Println("Action 1")
@@ -90,15 +90,15 @@ func TestDeounceMixed(t *testing.T) {
 		fmt.Println("Action 2")
 	})
 
-	time.Sleep(4 * time.Millisecond)
+	time.Sleep(300 * time.Millisecond)
 
 	debounce.Do(func() {
 		fmt.Println("Action 3")
 	})
 
-	time.Sleep(4 * time.Millisecond)
+	time.Sleep(300 * time.Millisecond)
 
-	if counter != 2 {
-		t.Error("Expected count 2, was ", counter)
+	if counter != expectedCounter {
+		t.Errorf("Expected count %d, was %d", expectedCounter, counter)
 	}
 }
