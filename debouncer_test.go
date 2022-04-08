@@ -37,50 +37,52 @@ var resetCounter = func() {
 
 func TestDebounceDoBeforeExpired(t *testing.T) {
 	resetCounter()
-	debouce := godebouncer.New(3 * time.Millisecond).WithTrigger(trigger)
+	debouce := godebouncer.New(200 * time.Millisecond).WithTrigger(trigger)
+	expectedCounter := uint64(1)
 
 	debouce.Do(func() {
 		fmt.Println("Action 1")
 	})
 
-	time.Sleep(2 * time.Millisecond)
+	time.Sleep(100 * time.Millisecond)
 
 	debouce.Do(func() {
 		fmt.Println("Action 2")
 	})
 
-	time.Sleep(4 * time.Millisecond)
+	time.Sleep(300 * time.Millisecond)
 
-	if counter != 1 {
-		t.Error("Expected count 1, was ", counter)
+	if counter != expectedCounter {
+		t.Errorf("Expected count %d, was %d", expectedCounter, counter)
 	}
 }
 
 func TestDebounceDoAfterExpired(t *testing.T) {
 	resetCounter()
-	debouce := godebouncer.New(3 * time.Millisecond).WithTrigger(trigger)
+	debouce := godebouncer.New(200 * time.Millisecond).WithTrigger(trigger)
+	expectedCounter := uint64(2)
 
 	debouce.Do(func() {
 		fmt.Println("Action 1")
 	})
 
-	time.Sleep(4 * time.Millisecond)
+	time.Sleep(300 * time.Millisecond)
 
 	debouce.Do(func() {
 		fmt.Println("Action 2")
 	})
 
-	time.Sleep(4 * time.Millisecond)
+	time.Sleep(300 * time.Millisecond)
 
-	if counter != 2 {
-		t.Error("Expected count 2, was ", counter)
+	if counter != expectedCounter {
+		t.Errorf("Expected count %d, was %d", expectedCounter, counter)
 	}
 }
 
 func TestDeounceMixed(t *testing.T) {
 	resetCounter()
-
-	debouce := godebouncer.New(3 * time.Millisecond).WithTrigger(trigger)
+	debouce := godebouncer.New(200 * time.Millisecond).WithTrigger(trigger)
+	expectedCounter := uint64(2)
 
 	debouce.Do(func() {
 		fmt.Println("Action 1")
@@ -90,15 +92,15 @@ func TestDeounceMixed(t *testing.T) {
 		fmt.Println("Action 2")
 	})
 
-	time.Sleep(4 * time.Millisecond)
+	time.Sleep(300 * time.Millisecond)
 
 	debouce.Do(func() {
 		fmt.Println("Action 3")
 	})
 
-	time.Sleep(4 * time.Millisecond)
+	time.Sleep(300 * time.Millisecond)
 
-	if counter != 2 {
-		t.Error("Expected count 2, was ", counter)
+	if counter != expectedCounter {
+		t.Errorf("Expected count %d, was %d", expectedCounter, counter)
 	}
 }
