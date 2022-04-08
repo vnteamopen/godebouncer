@@ -1,3 +1,3 @@
-module github.com/vnteamopen/godebounce
+module github.com/vnteamopen/godebouncer
 
-go 1.17
+go 1.18
