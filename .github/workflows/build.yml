@@ -1,0 +1,32 @@
+name: build
+on:
+  push:
+    branches:
+    - main
+  pull_request
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: '1.18.0'
+    - name: Install dependencies
+      run: |
+        go version
+        go mod tidy
+    - name: Run build
+      run: |
+        go build . 
+    - name: Run testing
+      run: |
+        go test -v ./...
+    - name: Run vetting
+      run: |
+        go vet -v ./...
