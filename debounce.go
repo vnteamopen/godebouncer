@@ -14,7 +14,7 @@ func New(duration time.Duration) *Debounce {
 	return &Debounce{timeDuration: duration, triggeredFunc: func() {}}
 }
 
-func (d *Debounce) WithTrigger(triggeredFunc func()) *Debounce {
+func (d *Debounce) WithTriggered(triggeredFunc func()) *Debounce {
 	d.triggeredFunc = triggeredFunc
 	return d
 }

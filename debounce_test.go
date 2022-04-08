@@ -9,7 +9,7 @@ import (
 )
 
 func Example() {
-	debounce := godebounce.New(10 * time.Second).WithTrigger(func() {
+	debounce := godebounce.New(10 * time.Second).WithTriggered(func() {
 		fmt.Println("Trigger") // Trigger func will be called after 10 seconds from last action.
 	})
 
@@ -27,7 +27,7 @@ func Example() {
 }
 
 var counter uint64
-var trigger = func() {
+var triggeredFunc = func() {
 	fmt.Println("Trigger")
 	counter++
 }
@@ -37,7 +37,7 @@ var resetCounter = func() {
 
 func TestDebounceDoBeforeExpired(t *testing.T) {
 	resetCounter()
-	debounce := godebounce.New(3 * time.Millisecond).WithTrigger(trigger)
+	debounce := godebounce.New(3 * time.Millisecond).WithTriggered(triggeredFunc)
 
 	debounce.Do(func() {
 		fmt.Println("Action 1")
@@ -58,7 +58,7 @@ func TestDebounceDoBeforeExpired(t *testing.T) {
 
 func TestDebounceDoAfterExpired(t *testing.T) {
 	resetCounter()
-	debounce := godebounce.New(3 * time.Millisecond).WithTrigger(trigger)
+	debounce := godebounce.New(3 * time.Millisecond).WithTriggered(triggeredFunc)
 
 	debounce.Do(func() {
 		fmt.Println("Action 1")
@@ -80,7 +80,7 @@ func TestDebounceDoAfterExpired(t *testing.T) {
 func TestDeounceMixed(t *testing.T) {
 	resetCounter()
 
-	debounce := godebounce.New(3 * time.Millisecond).WithTrigger(trigger)
+	debounce := godebounce.New(3 * time.Millisecond).WithTriggered(triggeredFunc)
 
 	debounce.Do(func() {
 		fmt.Println("Action 1")
