@@ -4,22 +4,22 @@ import (
 	"time"
 )
 
-type Debounce struct {
+type Debouncer struct {
 	timeDuration  time.Duration
 	timer         *time.Timer
 	triggeredFunc func()
 }
 
-func New(duration time.Duration) *Debounce {
-	return &Debounce{timeDuration: duration, triggeredFunc: func() {}}
+func New(duration time.Duration) *Debouncer {
+	return &Debouncer{timeDuration: duration, triggeredFunc: func() {}}
 }
 
-func (d *Debounce) WithTriggered(triggeredFunc func()) *Debounce {
+func (d *Debouncer) WithTriggered(triggeredFunc func()) *Debouncer {
 	d.triggeredFunc = triggeredFunc
 	return d
 }
 
-func (d *Debounce) Do(signalFunc func()) {
+func (d *Debouncer) Do(signalFunc func()) {
 	signalFunc()
 
 	if d.timer != nil {
