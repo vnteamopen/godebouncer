@@ -4,12 +4,12 @@ type Debounce struct {
 }
 
 func New() *Debounce {
-	return Debounce{}
+	return &Debounce{}
 }
 
-func (d *Debouce) WithTrigger(triggerFunc func()) *Debouce {
+func (d *Debounce) WithTrigger(triggerFunc func()) *Debounce {
 	return d
 }
 
-func (d *Debouce) Do(action func()) {
+func (d *Debounce) Do(action func()) {
 }
