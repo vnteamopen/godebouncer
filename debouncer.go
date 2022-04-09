@@ -40,3 +40,7 @@ func (d *Debouncer) Cancel() {
 func (d *Debouncer) UpdateTriggeredFunc(newTriggeredFunc func()) {
 	d.triggeredFunc = newTriggeredFunc
 }
+
+func (d *Debouncer) UpdateTimeDuration(newTimeDuration time.Duration) {
+	d.timeDuration = newTimeDuration
+}
