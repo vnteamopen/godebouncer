@@ -26,19 +26,10 @@ func Example() {
 	})
 }
 
-var counter uint64
-var triggeredFunc = func() {
-	fmt.Println("Trigger")
-	counter++
-}
-var resetCounter = func() {
-	counter = 0
-}
-
 func TestDebounceDoBeforeExpired(t *testing.T) {
-	resetCounter()
-	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(triggeredFunc)
-	expectedCounter := uint64(1)
+	countPtr, incrementCount := createIncrementCount(0)
+	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(incrementCount)
+	expectedCounter := int(1)
 
 	debouncer.Do(func() {
 		fmt.Println("Action 1")
@@ -52,15 +43,15 @@ func TestDebounceDoBeforeExpired(t *testing.T) {
 
 	time.Sleep(300 * time.Millisecond)
 
-	if counter != expectedCounter {
-		t.Errorf("Expected count %d, was %d", expectedCounter, counter)
+	if *countPtr != expectedCounter {
+		t.Errorf("Expected count %d, was %d", expectedCounter, *countPtr)
 	}
 }
 
 func TestDebounceDoAfterExpired(t *testing.T) {
-	resetCounter()
-	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(triggeredFunc)
-	expectedCounter := uint64(2)
+	countPtr, incrementCount := createIncrementCount(0)
+	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(incrementCount)
+	expectedCounter := int(2)
 
 	debouncer.Do(func() {
 		fmt.Println("Action 1")
@@ -74,15 +65,15 @@ func TestDebounceDoAfterExpired(t *testing.T) {
 
 	time.Sleep(300 * time.Millisecond)
 
-	if counter != expectedCounter {
-		t.Errorf("Expected count %d, was %d", expectedCounter, counter)
+	if *countPtr != expectedCounter {
+		t.Errorf("Expected count %d, was %d", expectedCounter, *countPtr)
 	}
 }
 
 func TestDeounceMixed(t *testing.T) {
-	resetCounter()
-	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(triggeredFunc)
-	expectedCounter := uint64(2)
+	countPtr, incrementCount := createIncrementCount(0)
+	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(incrementCount)
+	expectedCounter := int(2)
 
 	debouncer.Do(func() {
 		fmt.Println("Action 1")
@@ -100,7 +91,24 @@ func TestDeounceMixed(t *testing.T) {
 
 	time.Sleep(300 * time.Millisecond)
 
-	if counter != expectedCounter {
-		t.Errorf("Expected count %d, was %d", expectedCounter, counter)
+	if *countPtr != expectedCounter {
+		t.Errorf("Expected count %d, was %d", expectedCounter, *countPtr)
+	}
+}
+
+func TestDebounceWithoutTriggeredFunc(t *testing.T) {
+	debouncer := godebouncer.New(200 * time.Millisecond)
+
+	debouncer.Do(func() {
+		fmt.Println("Action 1")
+	})
+	time.Sleep(300 * time.Millisecond)
+	fmt.Println("debouncer.Do() finished successfully!")
+}
+
+func createIncrementCount(counter int) (*int, func()) {
+	return &counter, func() {
+		fmt.Println("Triggered")
+		counter++
 	}
 }
