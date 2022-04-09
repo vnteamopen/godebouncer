@@ -35,7 +35,7 @@ func TestDebounceDoBeforeExpired(t *testing.T) {
 		fmt.Println("Action 1")
 	})
 
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(50 * time.Millisecond)
 
 	debouncer.Do(func() {
 		fmt.Println("Action 2")
