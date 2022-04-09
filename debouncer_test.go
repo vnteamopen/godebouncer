@@ -41,7 +41,7 @@ func TestDebounceDoBeforeExpired(t *testing.T) {
 		fmt.Println("Action 2")
 	})
 
-	time.Sleep(300 * time.Millisecond)
+	time.Sleep(400 * time.Millisecond)
 
 	if *countPtr != expectedCounter {
 		t.Errorf("Expected count %d, was %d", expectedCounter, *countPtr)
@@ -57,20 +57,20 @@ func TestDebounceDoAfterExpired(t *testing.T) {
 		fmt.Println("Action 1")
 	})
 
-	time.Sleep(300 * time.Millisecond)
+	time.Sleep(400 * time.Millisecond)
 
 	debouncer.Do(func() {
 		fmt.Println("Action 2")
 	})
 
-	time.Sleep(300 * time.Millisecond)
+	time.Sleep(400 * time.Millisecond)
 
 	if *countPtr != expectedCounter {
 		t.Errorf("Expected count %d, was %d", expectedCounter, *countPtr)
 	}
 }
 
-func TestDeounceMixed(t *testing.T) {
+func TestDebounceMixed(t *testing.T) {
 	countPtr, incrementCount := createIncrementCount(0)
 	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(incrementCount)
 	expectedCounter := int(2)
@@ -83,13 +83,13 @@ func TestDeounceMixed(t *testing.T) {
 		fmt.Println("Action 2")
 	})
 
-	time.Sleep(300 * time.Millisecond)
+	time.Sleep(400 * time.Millisecond)
 
 	debouncer.Do(func() {
 		fmt.Println("Action 3")
 	})
 
-	time.Sleep(300 * time.Millisecond)
+	time.Sleep(400 * time.Millisecond)
 
 	if *countPtr != expectedCounter {
 		t.Errorf("Expected count %d, was %d", expectedCounter, *countPtr)
@@ -102,8 +102,21 @@ func TestDebounceWithoutTriggeredFunc(t *testing.T) {
 	debouncer.Do(func() {
 		fmt.Println("Action 1")
 	})
-	time.Sleep(300 * time.Millisecond)
+	time.Sleep(400 * time.Millisecond)
 	fmt.Println("debouncer.Do() finished successfully!")
+}
+
+func TestDebounceSendSignal(t *testing.T) {
+	countPtr, incrementCount := createIncrementCount(0)
+	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(incrementCount)
+	expectedCounter := int(1)
+
+	debouncer.SendSignal()
+	time.Sleep(400 * time.Millisecond)
+
+	if *countPtr != expectedCounter {
+		t.Errorf("Expected count %d, was %d", expectedCounter, *countPtr)
+	}
 }
 
 func createIncrementCount(counter int) (*int, func()) {
