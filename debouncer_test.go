@@ -112,3 +112,16 @@ func createIncrementCount(counter int) (*int, func()) {
 		counter++
 	}
 }
+
+func TestDebounceSendSignal(t *testing.T) {
+	resetCounter()
+	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(triggeredFunc)
+	expectedCounter := uint64(1)
+
+	debouncer.SendSignal()
+	time.Sleep(250 * time.Millisecond)
+
+	if counter != expectedCounter {
+		t.Errorf("Expected count %d, was %d", expectedCounter, counter)
+	}
+}
