@@ -20,13 +20,17 @@ func (d *Debouncer) WithTriggered(triggeredFunc func()) *Debouncer {
 }
 
 func (d *Debouncer) SendSignal() {
-	if d.timer != nil {
-		d.timer.Stop()
-	}
+	d.Cancel()
 	d.timer = time.AfterFunc(d.timeDuration, d.triggeredFunc)
 }
 
 func (d *Debouncer) Do(signalFunc func()) {
 	signalFunc()
 	d.SendSignal()
+}
+
+func (d *Debouncer) Cancel() {
+	if d.timer != nil {
+		d.timer.Stop()
+	}
 }
