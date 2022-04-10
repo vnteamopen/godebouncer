@@ -162,3 +162,19 @@ func TestDebounceUpdateTriggeredFuncAfterDuration(t *testing.T) {
 		t.Errorf("Expected count %d, was %d", expectedCounter, *countPtr)
 	}
 }
+
+func TestDebounceCancel(t *testing.T) {
+	countPtr, incrementCount := createIncrementCount(0)
+	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(incrementCount)
+	expectedCounter := int(0)
+
+	debouncer.SendSignal()
+	time.Sleep(100 * time.Millisecond)
+
+	debouncer.Cancel()
+	time.Sleep(200 * time.Millisecond)
+
+	if *countPtr != expectedCounter {
+		t.Errorf("Expected count %d, was %d", expectedCounter, *countPtr)
+	}
+}
