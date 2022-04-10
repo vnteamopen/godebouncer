@@ -41,6 +41,7 @@ func (d *Debouncer) UpdateTriggeredFunc(newTriggeredFunc func()) {
 	d.triggeredFunc = newTriggeredFunc
 }
 
+// Update duration does not affect the current trigger
 func (d *Debouncer) UpdateTimeDuration(newTimeDuration time.Duration) {
 	d.timeDuration = newTimeDuration
 }
