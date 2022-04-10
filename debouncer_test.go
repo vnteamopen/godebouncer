@@ -137,7 +137,7 @@ func TestDebounceUpdateTriggeredFuncBeforeDuration(t *testing.T) {
 	debouncer.UpdateTriggeredFunc(func() {
 		*countPtr += 2
 	})
-	time.Sleep(200 * time.Millisecond)
+	time.Sleep(400 * time.Millisecond)
 
 	if *countPtr != expectedCounter {
 		t.Errorf("Expected count %d, was %d", expectedCounter, *countPtr)
@@ -150,13 +150,13 @@ func TestDebounceUpdateTriggeredFuncAfterDuration(t *testing.T) {
 	expectedCounter := int(3)
 
 	debouncer.SendSignal()
-	time.Sleep(300 * time.Millisecond)
+	time.Sleep(400 * time.Millisecond)
 
 	debouncer.UpdateTriggeredFunc(func() {
 		*countPtr += 2
 	})
 	debouncer.SendSignal()
-	time.Sleep(300 * time.Millisecond)
+	time.Sleep(400 * time.Millisecond)
 
 	if *countPtr != expectedCounter {
 		t.Errorf("Expected count %d, was %d", expectedCounter, *countPtr)
@@ -172,7 +172,7 @@ func TestDebounceCancel(t *testing.T) {
 	time.Sleep(100 * time.Millisecond)
 
 	debouncer.Cancel()
-	time.Sleep(200 * time.Millisecond)
+	time.Sleep(400 * time.Millisecond)
 
 	if *countPtr != expectedCounter {
 		t.Errorf("Expected count %d, was %d", expectedCounter, *countPtr)
