@@ -26,6 +26,13 @@ func Example() {
 	})
 }
 
+func createIncrementCount(counter int) (*int, func()) {
+	return &counter, func() {
+		fmt.Println("Triggered")
+		counter++
+	}
+}
+
 func TestDebounceDoBeforeExpired(t *testing.T) {
 	countPtr, incrementCount := createIncrementCount(0)
 	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(incrementCount)
@@ -116,12 +123,5 @@ func TestDebounceSendSignal(t *testing.T) {
 
 	if *countPtr != expectedCounter {
 		t.Errorf("Expected count %d, was %d", expectedCounter, *countPtr)
-	}
-}
-
-func createIncrementCount(counter int) (*int, func()) {
-	return &counter, func() {
-		fmt.Println("Triggered")
-		counter++
 	}
 }
