@@ -1,6 +1,7 @@
 package godebouncer
 
 import (
+	"sync"
 	"time"
 )
 
@@ -8,6 +9,7 @@ type Debouncer struct {
 	timeDuration  time.Duration
 	timer         *time.Timer
 	triggeredFunc func()
+	mu            sync.Mutex
 }
 
 func New(duration time.Duration) *Debouncer {
@@ -20,6 +22,9 @@ func (d *Debouncer) WithTriggered(triggeredFunc func()) *Debouncer {
 }
 
 func (d *Debouncer) SendSignal() {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+
 	d.Cancel()
 	d.timer = time.AfterFunc(d.timeDuration, func() {
 		d.triggeredFunc()
