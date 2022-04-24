@@ -133,7 +133,7 @@ func TestDebounceUpdateTriggeredFuncBeforeDuration(t *testing.T) {
 	expectedCounter := int(2)
 
 	debouncer.SendSignal()
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(50 * time.Millisecond)
 
 	debouncer.UpdateTriggeredFunc(func() {
 		*countPtr += 2
@@ -170,7 +170,7 @@ func TestDebounceCancel(t *testing.T) {
 	expectedCounter := int(0)
 
 	debouncer.SendSignal()
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(50 * time.Millisecond)
 
 	debouncer.Cancel()
 	time.Sleep(400 * time.Millisecond)
