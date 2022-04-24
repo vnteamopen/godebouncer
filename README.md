@@ -1,9 +1,9 @@
 # Go Debouncer
 [![Built with WeBuild](https://raw.githubusercontent.com/webuild-community/badge/master/svg/WeBuild.svg)](https://webuild.community) [![Go Reference](https://pkg.go.dev/badge/github.com/vnteamopen/godebouncer.svg)](https://pkg.go.dev/github.com/vnteamopen/godebouncer) [![build](https://github.com/vnteamopen/godebouncer/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/vnteamopen/godebouncer/actions/workflows/build.yml)
 
-Go Debouncer is a Go language library. It makes sure that pre-defined function is only triggered once per client's sinals during fixed duration.
+Go Debouncer is a Go language library. It makes sure that the pre-defined function is only triggered once per client's signals during a fixed duration.
 
-It allows creating a debouncer that delays invoking a triggered function until after the duration have elapsed since the last time the SendSingal was invoked.
+It allows creating a debouncer that delays invoking a triggered function until after the duration has elapsed since the last time the SendSingal was invoked.
 
  - A product from https://vnteamopen.com
 
@@ -36,7 +36,7 @@ func main() {
 	fmt.Println("Action 2")
 	debouncer.SendSignal()
 	// After 10 seconds, the trigger will be called.
-	//Previous `SendSignal()` will be ignore to trigger the triggered function.
+	// Previous `SendSignal()` will be ignore to trigger the triggered function.
 
 	time.Sleep(10 * time.Second)
 }
@@ -61,7 +61,7 @@ debouncer.Do(func() {
 
 ## Cancel
 
-Allows cancelling the timmer from the last function SendSignal(). The scheduled triggered function is cancelled and doesn't invoke.
+Allows cancelling the timer from the last function SendSignal(). The scheduled triggered function is cancelled and doesn't invoke.
 
 ```go
 wait := 10 * time.Second
@@ -93,7 +93,7 @@ debouncer.UpdateTriggeredFunc(func() {
 
 ## Update waiting time duration
 
-Allows replacing the waiting time duration. You need to call a SendSignal() again to trigger a new timmer with a new waiting time duration.
+Allows replacing the waiting time duration. You need to call a SendSignal() again to trigger a new timer with a new waiting time duration.
 
 ```go
 wait := 10 * time.Second
@@ -121,6 +121,6 @@ Core contributors:
 
 # Thanks! 🙌
 
- - Viet Nam We Build group https://webuild.community for discussion
+ - Viet Nam We Build group https://webuild.community for discussion.
 
 [![Stargazers repo roster for @vnteamopen/godebouncer](https://reporoster.com/stars/vnteamopen/godebouncer)](https://github.com/vnteamopen/godebouncer/stargazers)
