@@ -57,6 +57,8 @@ debouncer := godebouncer.New(wait).WithTriggered(func() {
 debouncer.Do(func() {
 	fmt.Println("Action 1")
 })
+// Debouncer run the argument function of Do() then SendSignal(). They run sequencely.
+// After 10 seconds from finishing Do(), the triggered function will be called.
 ```
 
 ## Cancel
