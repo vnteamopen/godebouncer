@@ -34,7 +34,7 @@ func (d *Debouncer) SendSignal() {
 	})
 }
 
-// Do run the signalFunc() and call SendSignal() after all. The signalFunc() and SendSignal() function run sequencely.
+// Do run the signalFunc() and call SendSignal() after all. The signalFunc() and SendSignal() function run sequentially.
 func (d *Debouncer) Do(signalFunc func()) {
 	signalFunc()
 	d.SendSignal()
