@@ -36,7 +36,7 @@ func main() {
 	fmt.Println("Action 2")
 	debouncer.SendSignal()
 	// After 10 seconds, the trigger will be called.
-	// Previous `SendSignal()` will be ignore to trigger the triggered function.
+	// Previous `SendSignal()` will be ignored to trigger the triggered function.
 
 	time.Sleep(10 * time.Second)
 }
