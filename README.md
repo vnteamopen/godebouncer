@@ -1,5 +1,7 @@
 # Go Debouncer
-[![Built with WeBuild](https://raw.githubusercontent.com/webuild-community/badge/master/svg/WeBuild.svg)](https://webuild.community) [![Go Reference](https://pkg.go.dev/badge/github.com/vnteamopen/godebouncer.svg)](https://pkg.go.dev/github.com/vnteamopen/godebouncer) [![build](https://github.com/vnteamopen/godebouncer/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/vnteamopen/godebouncer/actions/workflows/build.yml)
+[![Go Reference](https://pkg.go.dev/badge/github.com/vnteamopen/godebouncer.svg)](https://pkg.go.dev/github.com/vnteamopen/godebouncer) [![build](https://github.com/vnteamopen/godebouncer/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/vnteamopen/godebouncer/actions/workflows/build.yml) [![Go Report Card](https://goreportcard.com/badge/github.com/vnteamopen/godebouncer)](https://goreportcard.com/report/github.com/vnteamopen/godebouncer) 
+[![Built with WeBuild](https://raw.githubusercontent.com/webuild-community/badge/master/svg/WeBuild.svg)](https://webuild.community) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/vnteamopen/godebouncer/blob/main/LICENSE)
+
 
 Go Debouncer is a Go language library. It makes sure that the pre-defined function is only triggered once per client's signals during a fixed duration.
 
@@ -24,7 +26,7 @@ From your code, you can try to create debouncer.
 package main
 
 func main() {
-	wait := 10 * time.Second
+	wait := 5 * time.Second
 	debouncer := godebouncer.New(wait).WithTriggered(func() {
 		fmt.Println("Trigger") // Triggered func will be called after 10 seconds from last SendSignal().
 	})
@@ -32,11 +34,11 @@ func main() {
 	fmt.Println("Action 1")
 	debouncer.SendSignal()
 
-	time.Sleep(3 * time.Second)
+	time.Sleep(1 * time.Second)
 
 	fmt.Println("Action 2")
 	debouncer.SendSignal()
-	// After 10 seconds, the trigger will be called.
+	// After 5 seconds, the trigger will be called.
 	// Previous `SendSignal()` will be ignored to trigger the triggered function.
 
 	time.Sleep(10 * time.Second)
