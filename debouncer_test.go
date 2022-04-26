@@ -9,21 +9,22 @@ import (
 )
 
 func Example() {
-	debouncer := godebouncer.New(10 * time.Second).WithTriggered(func() {
-		fmt.Println("Trigger") // Triggered func will be called after 10 seconds from last action.
+	wait := 10 * time.Second
+	debouncer := godebouncer.New(wait).WithTriggered(func() {
+		fmt.Println("Trigger") // Triggered func will be called after 10 seconds from last SendSignal().
 	})
 
-	debouncer.Do(func() {
-		fmt.Println("Action 1") // After 10 seconds, the trigger will be called.
-	})
+	fmt.Println("Action 1")
+	debouncer.SendSignal()
 
 	time.Sleep(3 * time.Second)
 
-	debouncer.Do(func() {
-		fmt.Println("Action 2")
-		// The scheduler of triggered func of Action 1 will be cleared.
-		// After 10 seconds of action 2, triggered will be called.
-	})
+	fmt.Println("Action 2")
+	debouncer.SendSignal()
+	// After 10 seconds, the trigger will be called.
+	//Previous `SendSignal()` will be ignore to trigger the triggered function.
+
+	time.Sleep(10 * time.Second)
 }
 
 func createIncrementCount(counter int) (*int, func()) {
@@ -132,7 +133,7 @@ func TestDebounceUpdateTriggeredFuncBeforeDuration(t *testing.T) {
 	expectedCounter := int(2)
 
 	debouncer.SendSignal()
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(50 * time.Millisecond)
 
 	debouncer.UpdateTriggeredFunc(func() {
 		*countPtr += 2
@@ -169,7 +170,7 @@ func TestDebounceCancel(t *testing.T) {
 	expectedCounter := int(0)
 
 	debouncer.SendSignal()
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(50 * time.Millisecond)
 
 	debouncer.Cancel()
 	time.Sleep(400 * time.Millisecond)
