@@ -5,6 +5,7 @@ Go Debouncer is a Go language library. It makes sure that the pre-defined functi
 
 It allows creating a debouncer that delays invoking a triggered function until after the duration has elapsed since the last time the SendSingal was invoked.
 
+ - Official page: https://godebouncer.vnteamopen.com
  - A product from https://vnteamopen.com
 
 ![GoDebouncer_drawio](https://user-images.githubusercontent.com/1828895/164943072-093b22e6-6471-4d2e-93bb-8fd08f2e4953.png)
