@@ -25,6 +25,13 @@ From your code, you can try to create debouncer.
 ```go
 package main
 
+import (
+	"fmt"
+	"time"
+
+	"github.com/vnteamopen/godebouncer"
+)
+
 func main() {
 	wait := 5 * time.Second
 	debouncer := godebouncer.New(wait).WithTriggered(func() {
