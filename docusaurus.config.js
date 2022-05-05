@@ -54,7 +54,7 @@ const config = {
       },
       footer: {
         style: 'dark',
-        copyright: `Copyright © ${new Date().getFullYear()} Vietnam Open Team.`,
+        copyright: `Copyright © ${new Date().getFullYear()} Vietnam Open Team`,
       },
       prism: {
         theme: lightCodeTheme,
