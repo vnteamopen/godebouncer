@@ -11,11 +11,56 @@ type Debouncer struct {
 	triggeredFunc func()
 	mu            sync.Mutex
 	done          chan struct{}
+	options       Options
+}
+type Options struct {
+	leading  bool
+	trailing bool
 }
 
+type DebouncerOptions func(*Debouncer)
+
+// func New(duration time.Duration) *Debouncer {
+// 	return &Debouncer{timeDuration: duration, triggeredFunc: func() {}, done: make(chan struct{})}
+// }
+
 // New creates a new instance of debouncer. Each instance of debouncer works independent, concurrency with different wait duration.
-func New(duration time.Duration) *Debouncer {
-	return &Debouncer{timeDuration: duration, triggeredFunc: func() {}, done: make(chan struct{})}
+func New(opts ...DebouncerOptions) *Debouncer {
+	var (
+		defaultDuration      = 1 * time.Minute
+		defaultOptions       = Options{leading: false, trailing: true}
+		defaultTriggeredFunc = func() {}
+	)
+
+	d := &Debouncer{
+		timeDuration:  defaultDuration,
+		triggeredFunc: defaultTriggeredFunc,
+		options:       defaultOptions,
+	}
+
+	for _, opt := range opts {
+		opt(d)
+	}
+
+	return d
+}
+
+func WithOptions(options Options) DebouncerOptions {
+	return func(d *Debouncer) {
+		d.options = options
+	}
+}
+
+func WithTriggered(triggeredFunc func()) DebouncerOptions {
+	return func(d *Debouncer) {
+		d.triggeredFunc = triggeredFunc
+	}
+}
+
+func WithTimeDuration(timeDuration time.Duration) DebouncerOptions {
+	return func(d *Debouncer) {
+		d.timeDuration = timeDuration
+	}
 }
 
 // WithTriggered attached a triggered function to debouncer instance and return the same instance of debouncer to use.

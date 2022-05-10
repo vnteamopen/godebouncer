@@ -5,14 +5,17 @@ import (
 	"testing"
 	"time"
 
-	"github.com/vnteamopen/godebouncer"
+	gd "github.com/vnteamopen/godebouncer"
 )
 
 func Example() {
-	wait := 5 * time.Second
-	debouncer := godebouncer.New(wait).WithTriggered(func() {
-		fmt.Println("Trigger") // Triggered func will be called after 5 seconds from last SendSignal().
-	})
+	debouncer := gd.New(
+		gd.WithTimeDuration(5*time.Second),
+		gd.WithTriggered(func() {
+			// Triggered func will be called after 5 seconds from last SendSignal().
+			fmt.Println("Trigger")
+		}),
+	)
 
 	fmt.Println("Action 1")
 	debouncer.SendSignal()
@@ -36,7 +39,10 @@ func createIncrementCount(counter int) (*int, func()) {
 
 func TestDebounceDoBeforeExpired(t *testing.T) {
 	countPtr, incrementCount := createIncrementCount(0)
-	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(incrementCount)
+	debouncer := gd.New(
+		gd.WithTimeDuration(200*time.Millisecond),
+		gd.WithTriggered(incrementCount),
+	)
 	expectedCounter := int(1)
 
 	debouncer.Do(func() {
@@ -58,7 +64,10 @@ func TestDebounceDoBeforeExpired(t *testing.T) {
 
 func TestDebounceDoAfterExpired(t *testing.T) {
 	countPtr, incrementCount := createIncrementCount(0)
-	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(incrementCount)
+	debouncer := gd.New(
+		gd.WithTimeDuration(2*time.Millisecond),
+		gd.WithTriggered(incrementCount),
+	)
 	expectedCounter := int(2)
 
 	debouncer.Do(func() {
@@ -80,7 +89,10 @@ func TestDebounceDoAfterExpired(t *testing.T) {
 
 func TestDebounceMixed(t *testing.T) {
 	countPtr, incrementCount := createIncrementCount(0)
-	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(incrementCount)
+	debouncer := gd.New(
+		gd.WithTimeDuration(200*time.Millisecond),
+		gd.WithTriggered(incrementCount),
+	)
 	expectedCounter := int(2)
 
 	debouncer.Do(func() {
@@ -105,7 +117,7 @@ func TestDebounceMixed(t *testing.T) {
 }
 
 func TestDebounceWithoutTriggeredFunc(t *testing.T) {
-	debouncer := godebouncer.New(200 * time.Millisecond)
+	debouncer := gd.New(gd.WithTimeDuration(200 * time.Millisecond))
 
 	debouncer.Do(func() {
 		fmt.Println("Action 1")
@@ -117,7 +129,10 @@ func TestDebounceWithoutTriggeredFunc(t *testing.T) {
 
 func TestDebounceSendSignal(t *testing.T) {
 	countPtr, incrementCount := createIncrementCount(0)
-	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(incrementCount)
+	debouncer := gd.New(
+		gd.WithTimeDuration(200*time.Millisecond),
+		gd.WithTriggered(incrementCount),
+	)
 	expectedCounter := int(1)
 
 	debouncer.SendSignal()
@@ -130,7 +145,10 @@ func TestDebounceSendSignal(t *testing.T) {
 
 func TestDebounceUpdateTriggeredFuncBeforeDuration(t *testing.T) {
 	countPtr, incrementCount := createIncrementCount(0)
-	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(incrementCount)
+	debouncer := gd.New(
+		gd.WithTimeDuration(200*time.Millisecond),
+		gd.WithTriggered(incrementCount),
+	)
 	expectedCounter := int(2)
 
 	debouncer.SendSignal()
@@ -148,7 +166,10 @@ func TestDebounceUpdateTriggeredFuncBeforeDuration(t *testing.T) {
 
 func TestDebounceUpdateTriggeredFuncAfterDuration(t *testing.T) {
 	countPtr, incrementCount := createIncrementCount(0)
-	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(incrementCount)
+	debouncer := gd.New(
+		gd.WithTimeDuration(200*time.Millisecond),
+		gd.WithTriggered(incrementCount),
+	)
 	expectedCounter := int(3)
 
 	debouncer.SendSignal()
@@ -167,7 +188,10 @@ func TestDebounceUpdateTriggeredFuncAfterDuration(t *testing.T) {
 
 func TestDebounceCancel(t *testing.T) {
 	countPtr, incrementCount := createIncrementCount(0)
-	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(incrementCount)
+	debouncer := gd.New(
+		gd.WithTimeDuration(200*time.Millisecond),
+		gd.WithTriggered(incrementCount),
+	)
 	expectedCounter := int(0)
 
 	debouncer.SendSignal()
@@ -183,7 +207,10 @@ func TestDebounceCancel(t *testing.T) {
 
 func TestDebounceUpdateDuration(t *testing.T) {
 	countPtr, incrementCount := createIncrementCount(0)
-	debouncer := godebouncer.New(600 * time.Millisecond).WithTriggered(incrementCount)
+	debouncer := gd.New(
+		gd.WithTimeDuration(600*time.Millisecond),
+		gd.WithTriggered(incrementCount),
+	)
 	expectedCounter := int(1)
 
 	debouncer.UpdateTimeDuration(200 * time.Millisecond)
@@ -197,7 +224,10 @@ func TestDebounceUpdateDuration(t *testing.T) {
 
 func TestDebounceUpdateDurationAfterSendSignal(t *testing.T) {
 	countPtr, incrementCount := createIncrementCount(0)
-	debouncer := godebouncer.New(400 * time.Millisecond).WithTriggered(incrementCount)
+	debouncer := gd.New(
+		gd.WithTimeDuration(400*time.Millisecond),
+		gd.WithTriggered(incrementCount),
+	)
 	expectedCounter := int(1)
 
 	debouncer.SendSignal()
