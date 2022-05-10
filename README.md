@@ -111,9 +111,9 @@ debouncer.SendSignal()
 // Output: "Trigger" after 20 seconds
 ```
 
-## Let the main goroutine knows when the triggered function is invoked
+## Let the caller knows when the triggered function has been invoked
 
-Allows the caller of godebouncer knows when the triggered function is invoked to synchronize execution across goroutines.
+Allows the caller of godebouncer knows when the triggered function is done invoking to synchronize execution across goroutines.
 
 ```go
 wait := 1 * time.Second
@@ -124,6 +124,7 @@ debouncer := godebouncer.new(wait).WithTriggered(func() {
 })
 
 debouncer.SendSignal()
+
 <-debouncer.Done() // The current goroutine will wait until the triggered func finish its execution.
 
 fmt.Println("After done")
