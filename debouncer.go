@@ -32,9 +32,7 @@ func (d *Debouncer) SendSignal() {
 	d.Cancel()
 	d.timer = time.AfterFunc(d.timeDuration, func() {
 		d.triggeredFunc()
-		go func() {
-			d.done <- true
-		}()
+		d.done <- true
 	})
 }
 
