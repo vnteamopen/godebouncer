@@ -10,11 +10,12 @@ type Debouncer struct {
 	timer         *time.Timer
 	triggeredFunc func()
 	mu            sync.Mutex
+	done          chan bool
 }
 
 // New creates a new instance of debouncer. Each instance of debouncer works independent, concurrency with different wait duration.
 func New(duration time.Duration) *Debouncer {
-	return &Debouncer{timeDuration: duration, triggeredFunc: func() {}}
+	return &Debouncer{timeDuration: duration, triggeredFunc: func() {}, done: make(chan bool, 1)}
 }
 
 // WithTriggered attached a triggered function to debouncer instance and return the same instance of debouncer to use.
@@ -31,6 +32,9 @@ func (d *Debouncer) SendSignal() {
 	d.Cancel()
 	d.timer = time.AfterFunc(d.timeDuration, func() {
 		d.triggeredFunc()
+		go func() {
+			d.done <- true
+		}()
 	})
 }
 
@@ -55,4 +59,9 @@ func (d *Debouncer) UpdateTriggeredFunc(newTriggeredFunc func()) {
 // UpdateTimeDuratioe replaces the waiting time duration. You need to call a SendSignal() again to trigger a new timer with a new waiting time duration.
 func (d *Debouncer) UpdateTimeDuration(newTimeDuration time.Duration) {
 	d.timeDuration = newTimeDuration
+}
+
+// Done returns a receive-only channel to notify the caller when the triggered func is invoked.
+func (d *Debouncer) Done() <-chan bool {
+	return d.done
 }

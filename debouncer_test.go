@@ -21,10 +21,10 @@ func Example() {
 
 	fmt.Println("Action 2")
 	debouncer.SendSignal()
+
 	// After 5 seconds, the trigger will be called.
 	//Previous `SendSignal()` will be ignore to trigger the triggered function.
-
-	time.Sleep(10 * time.Second)
+	<-debouncer.Done()
 }
 
 func createIncrementCount(counter int) (*int, func()) {
@@ -49,7 +49,7 @@ func TestDebounceDoBeforeExpired(t *testing.T) {
 		fmt.Println("Action 2")
 	})
 
-	time.Sleep(400 * time.Millisecond)
+	<-debouncer.Done()
 
 	if *countPtr != expectedCounter {
 		t.Errorf("Expected count %d, was %d", expectedCounter, *countPtr)
@@ -65,13 +65,13 @@ func TestDebounceDoAfterExpired(t *testing.T) {
 		fmt.Println("Action 1")
 	})
 
-	time.Sleep(400 * time.Millisecond)
+	<-debouncer.Done()
 
 	debouncer.Do(func() {
 		fmt.Println("Action 2")
 	})
 
-	time.Sleep(400 * time.Millisecond)
+	<-debouncer.Done()
 
 	if *countPtr != expectedCounter {
 		t.Errorf("Expected count %d, was %d", expectedCounter, *countPtr)
@@ -91,13 +91,13 @@ func TestDebounceMixed(t *testing.T) {
 		fmt.Println("Action 2")
 	})
 
-	time.Sleep(400 * time.Millisecond)
+	<-debouncer.Done()
 
 	debouncer.Do(func() {
 		fmt.Println("Action 3")
 	})
 
-	time.Sleep(400 * time.Millisecond)
+	<-debouncer.Done()
 
 	if *countPtr != expectedCounter {
 		t.Errorf("Expected count %d, was %d", expectedCounter, *countPtr)
@@ -110,7 +110,8 @@ func TestDebounceWithoutTriggeredFunc(t *testing.T) {
 	debouncer.Do(func() {
 		fmt.Println("Action 1")
 	})
-	time.Sleep(400 * time.Millisecond)
+	<-debouncer.Done()
+
 	fmt.Println("debouncer.Do() finished successfully!")
 }
 
@@ -120,7 +121,7 @@ func TestDebounceSendSignal(t *testing.T) {
 	expectedCounter := int(1)
 
 	debouncer.SendSignal()
-	time.Sleep(400 * time.Millisecond)
+	<-debouncer.Done()
 
 	if *countPtr != expectedCounter {
 		t.Errorf("Expected count %d, was %d", expectedCounter, *countPtr)
@@ -138,7 +139,7 @@ func TestDebounceUpdateTriggeredFuncBeforeDuration(t *testing.T) {
 	debouncer.UpdateTriggeredFunc(func() {
 		*countPtr += 2
 	})
-	time.Sleep(400 * time.Millisecond)
+	<-debouncer.Done()
 
 	if *countPtr != expectedCounter {
 		t.Errorf("Expected count %d, was %d", expectedCounter, *countPtr)
@@ -151,13 +152,13 @@ func TestDebounceUpdateTriggeredFuncAfterDuration(t *testing.T) {
 	expectedCounter := int(3)
 
 	debouncer.SendSignal()
-	time.Sleep(400 * time.Millisecond)
+	<-debouncer.Done()
 
 	debouncer.UpdateTriggeredFunc(func() {
 		*countPtr += 2
 	})
 	debouncer.SendSignal()
-	time.Sleep(400 * time.Millisecond)
+	<-debouncer.Done()
 
 	if *countPtr != expectedCounter {
 		t.Errorf("Expected count %d, was %d", expectedCounter, *countPtr)
@@ -187,7 +188,7 @@ func TestDebounceUpdateDuration(t *testing.T) {
 
 	debouncer.UpdateTimeDuration(200 * time.Millisecond)
 	debouncer.SendSignal()
-	time.Sleep(400 * time.Millisecond)
+	<-debouncer.Done()
 
 	if *countPtr != expectedCounter {
 		t.Errorf("Expected count %d, was %d", expectedCounter, *countPtr)
@@ -203,9 +204,22 @@ func TestDebounceUpdateDurationAfterSendSignal(t *testing.T) {
 	time.Sleep(200 * time.Millisecond)
 
 	debouncer.UpdateTimeDuration(600 * time.Millisecond)
-	time.Sleep(300 * time.Millisecond)
+	<-debouncer.Done()
 
 	if *countPtr != expectedCounter {
 		t.Errorf("Expected count %d, was %d", expectedCounter, *countPtr)
+	}
+}
+
+func TestDone(t *testing.T) {
+	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(func() {
+		fmt.Println("Triggered")
+	})
+
+	debouncer.SendSignal()
+	done := <-debouncer.Done()
+
+	if done != true {
+		t.Errorf("Expected done %t, was %t", true, done)
 	}
 }

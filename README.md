@@ -38,10 +38,10 @@ func main() {
 
 	fmt.Println("Action 2")
 	debouncer.SendSignal()
+
 	// After 5 seconds, the trigger will be called.
 	// Previous `SendSignal()` will be ignored to trigger the triggered function.
-
-	time.Sleep(10 * time.Second)
+	<-debouncer.Done()
 }
 ```
 
@@ -109,6 +109,24 @@ debouncer := godebouncer.New(wait).WithTriggered(func() {
 debouncer.UpdateTimeDuration(20 * time.Millisecond)
 debouncer.SendSignal()
 // Output: "Trigger" after 20 seconds
+```
+
+## Let the main goroutine knows when the triggered function is invoked
+
+Allows the caller of godebouncer knows when the triggered function is invoked to synchronize execution across goroutines.
+
+```go
+wait := 1 * time.Second
+debouncer := godebouncer.new(wait).WithTriggered(func() {
+	fmt.Println("Fetching...")
+	time.Sleep(2 * time.Second)
+	fmt.Println("Done")
+})
+
+debouncer.SendSignal()
+<-debouncer.Done() // The current goroutine will wait until the triggered func finish its execution.
+
+fmt.Println("After done")
 ```
 
 # License
