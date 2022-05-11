@@ -212,12 +212,21 @@ func TestDebounceUpdateDurationAfterSendSignal(t *testing.T) {
 }
 
 func TestDone(t *testing.T) {
-	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(func() {
-		fmt.Println("Triggered")
-	})
+	countPtr, incrementCount := createIncrementCount(0)
+	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(incrementCount)
+	expectedCounter := int(2)
 
+	fmt.Println("Action 1")
+	debouncer.SendSignal()
+	time.Sleep(400 * time.Millisecond)
+
+	fmt.Println("Action 2")
 	debouncer.SendSignal()
 	<-debouncer.Done()
 
-	fmt.Println("Debouncer has done signalling")
+	fmt.Println(len(debouncer.Done()))
+
+	if *countPtr != expectedCounter {
+		t.Errorf("Expected count %d, was %d", expectedCounter, *countPtr)
+	}
 }

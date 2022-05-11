@@ -47,6 +47,7 @@ func (d *Debouncer) Cancel() {
 	if d.timer != nil {
 		d.timer.Stop()
 	}
+	d.done = make(chan struct{})
 }
 
 // UpdateTriggeredFunc replaces triggered function.
