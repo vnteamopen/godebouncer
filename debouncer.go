@@ -15,7 +15,7 @@ type Debouncer struct {
 
 // New creates a new instance of debouncer. Each instance of debouncer works independent, concurrency with different wait duration.
 func New(duration time.Duration) *Debouncer {
-	return &Debouncer{timeDuration: duration, triggeredFunc: func() {}, done: make(chan struct{}, 1)}
+	return &Debouncer{timeDuration: duration, triggeredFunc: func() {}, done: make(chan struct{})}
 }
 
 // WithTriggered attached a triggered function to debouncer instance and return the same instance of debouncer to use.
