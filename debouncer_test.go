@@ -219,5 +219,5 @@ func TestDone(t *testing.T) {
 	debouncer.SendSignal()
 	<-debouncer.Done()
 
-	fmt.Println("debouncer has done signalling")
+	fmt.Println("Debouncer has done signalling")
 }
