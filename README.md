@@ -26,8 +26,7 @@ From your code, you can try to create debouncer.
 package main
 
 func main() {
-	wait := 5 * time.Second
-	debouncer := godebouncer.New(wait).WithTriggered(func() {
+	debouncer := godebouncer.New(5 * time.Second).WithTriggered(func() {
 		fmt.Println("Trigger") // Triggered func will be called after 5 seconds from last SendSignal().
 	})
 
@@ -52,8 +51,7 @@ func main() {
 Allows defining actions before calling SendSignal(). They are synchronous.
 
 ```go
-wait := 10 * time.Second
-debouncer := godebouncer.New(wait).WithTriggered(func() {
+debouncer := godebouncer.New(10 * time.Second).WithTriggered(func() {
 	fmt.Println("Trigger") // Triggered func will be called after 10 seconds from last SendSignal().
 })
 
@@ -69,8 +67,7 @@ debouncer.Do(func() {
 Allows cancelling the timer from the last function SendSignal(). The scheduled triggered function is cancelled and doesn't invoke.
 
 ```go
-wait := 10 * time.Second
-debouncer := godebouncer.New(wait).WithTriggered(func() {
+debouncer := godebouncer.New(10 * time.Second).WithTriggered(func() {
 	fmt.Println("Trigger") // Triggered func will be called after 10 seconds from last SendSignal().
 })
 
@@ -83,8 +80,7 @@ debouncer.Cancel() // No triggered function is called
 Allows replacing triggered function.
 
 ```go
-wait := 10 * time.Second
-debouncer := godebouncer.New(wait).WithTriggered(func() {
+debouncer := godebouncer.New(10 * time.Second).WithTriggered(func() {
 	fmt.Println("Trigger 1") // Triggered func will be called after 10 seconds from last SendSignal().
 })
 
@@ -101,8 +97,7 @@ debouncer.UpdateTriggeredFunc(func() {
 Allows replacing the waiting time duration. You need to call a SendSignal() again to trigger a new timer with a new waiting time duration.
 
 ```go
-wait := 10 * time.Second
-debouncer := godebouncer.New(wait).WithTriggered(func() {
+debouncer := godebouncer.New(10 * time.Second).WithTriggered(func() {
 	fmt.Println("Trigger") // Triggered func will be called after 10 seconds from last SendSignal().
 })
 
