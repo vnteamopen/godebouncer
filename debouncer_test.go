@@ -217,9 +217,7 @@ func TestDone(t *testing.T) {
 	})
 
 	debouncer.SendSignal()
-	done := <-debouncer.Done()
+	<-debouncer.Done()
 
-	if done != true {
-		t.Errorf("Expected done %t, was %t", true, done)
-	}
+	fmt.Println("debouncer has done signalling")
 }

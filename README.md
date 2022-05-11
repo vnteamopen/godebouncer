@@ -116,8 +116,7 @@ debouncer.SendSignal()
 Allows the caller of godebouncer knows when the triggered function is done invoking to synchronize execution across goroutines.
 
 ```go
-wait := 1 * time.Second
-debouncer := godebouncer.new(wait).WithTriggered(func() {
+debouncer := godebouncer.new(1 * time.Second).WithTriggered(func() {
 	fmt.Println("Fetching...")
 	time.Sleep(2 * time.Second)
 	fmt.Println("Done")
