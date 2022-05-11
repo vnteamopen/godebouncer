@@ -60,7 +60,7 @@ func (d *Debouncer) UpdateTimeDuration(newTimeDuration time.Duration) {
 	d.timeDuration = newTimeDuration
 }
 
-// Done returns a receive-only channel to notify the caller when the triggered func is invoked.
+// Done returns a receive-only channel to notify the caller when the triggered func has been executed.
 func (d *Debouncer) Done() <-chan struct{} {
 	return d.done
 }
