@@ -218,7 +218,7 @@ func TestDone(t *testing.T) {
 
 	fmt.Println("Action 1")
 	debouncer.SendSignal()
-	time.Sleep(400 * time.Millisecond)
+	<-debouncer.Done()
 
 	fmt.Println("Action 2")
 	debouncer.SendSignal()
@@ -228,5 +228,40 @@ func TestDone(t *testing.T) {
 
 	if *countPtr != expectedCounter {
 		t.Errorf("Expected count %d, was %d", expectedCounter, *countPtr)
+	}
+
+	select {
+	case <-debouncer.Done():
+	case <-time.After(time.Second):
+		t.Error("Multiple calls to debouncer.Done() hang")
+	}
+}
+
+func TestDoneBeforeSendSignal(t *testing.T) {
+	countPtr, incrementCount := createIncrementCount(0)
+	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(incrementCount)
+	expectedCounter := int(2)
+
+	doneCh := debouncer.Done()
+	select {
+	case <-doneCh:
+		t.Error("doneCh must be hang")
+	case <-time.After(time.Second):
+	}
+
+	debouncer.SendSignal()
+	<-debouncer.Done()
+
+	debouncer.SendSignal()
+	<-debouncer.Done()
+
+	if *countPtr != expectedCounter {
+		t.Errorf("Expected count %d, was %d", expectedCounter, *countPtr)
+	}
+
+	select {
+	case <-doneCh:
+	case <-time.After(time.Second):
+		t.Error("doneCh was not closed")
 	}
 }

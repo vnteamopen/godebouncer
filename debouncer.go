@@ -2,6 +2,7 @@ package godebouncer
 
 import (
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -10,12 +11,12 @@ type Debouncer struct {
 	timer         *time.Timer
 	triggeredFunc func()
 	mu            sync.Mutex
-	done          chan struct{}
+	done          atomic.Value
 }
 
 // New creates a new instance of debouncer. Each instance of debouncer works independent, concurrency with different wait duration.
 func New(duration time.Duration) *Debouncer {
-	return &Debouncer{timeDuration: duration, triggeredFunc: func() {}, done: make(chan struct{})}
+	return &Debouncer{timeDuration: duration, triggeredFunc: func() {}}
 }
 
 // WithTriggered attached a triggered function to debouncer instance and return the same instance of debouncer to use.
@@ -30,9 +31,12 @@ func (d *Debouncer) SendSignal() {
 	defer d.mu.Unlock()
 
 	d.Cancel()
+	d.closeDone()
+	d.done.Store(make(chan struct{}))
 	d.timer = time.AfterFunc(d.timeDuration, func() {
 		d.triggeredFunc()
-		d.done <- struct{}{}
+		d.closeDone()
+		d.done.Store(closedchan)
 	})
 }
 
@@ -47,7 +51,7 @@ func (d *Debouncer) Cancel() {
 	if d.timer != nil {
 		d.timer.Stop()
 	}
-	d.done = make(chan struct{})
+	d.done.CompareAndSwap(nil, closedchan)
 }
 
 // UpdateTriggeredFunc replaces triggered function.
@@ -60,7 +64,25 @@ func (d *Debouncer) UpdateTimeDuration(newTimeDuration time.Duration) {
 	d.timeDuration = newTimeDuration
 }
 
-// Done returns a receive-only channel to notify the caller when the triggered func has been executed.
 func (d *Debouncer) Done() <-chan struct{} {
-	return d.done
+	done := d.done.Load()
+	if done != nil {
+		return done.(chan struct{})
+	}
+	d.done.CompareAndSwap(nil, make(chan struct{}))
+	return d.done.Load().(chan struct{})
+}
+
+func (d *Debouncer) closeDone() {
+	done, _ := d.done.Load().(chan struct{})
+	if done != nil && done != closedchan {
+		close(done)
+	}
+}
+
+// closedchan is a reusable closed channel.
+var closedchan = make(chan struct{})
+
+func init() {
+	close(closedchan)
 }
