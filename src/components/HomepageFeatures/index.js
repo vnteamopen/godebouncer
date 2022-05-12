@@ -28,11 +28,19 @@ const FeatureList = [
       </>
     ),
   },
+  {
+    title: 'Notify the Caller When Triggered Func Finishes',
+    description: (
+      <>
+        Debouncer allows sending a signal via the <code>Done()</code> channel to the caller to let it knows the triggered func has been executed successfully.
+      </>
+    ),
+  },
 ];
 
 function Feature({title, description}) {
   return (
-    <div className={clsx('col col--4')}>
+    <div className={clsx('col col--3')}>
       <div className="text--left padding-horiz--lg">
         <h3>{title}</h3>
         <p>{description}</p>

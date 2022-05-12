@@ -8,8 +8,7 @@ import (
 )
 
 func main() {
-	wait := 5 * time.Second
-	debouncer := godebouncer.New(wait).WithTriggered(func() {
+	debouncer := godebouncer.New(5 * time.Second).WithTriggered(func() {
 		fmt.Println("Trigger") // Triggered func will be called after 5 seconds from last SendSignal().
 	})
 
@@ -20,8 +19,8 @@ func main() {
 
 	fmt.Println("Action 2")
 	debouncer.SendSignal()
+
 	// After 5 seconds, the trigger will be called.
 	// Previous `SendSignal()` will be ignored to trigger the triggered function.
-
-	time.Sleep(10 * time.Second)
+	<-debouncer.Done()
 }
