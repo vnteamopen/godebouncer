@@ -27,10 +27,10 @@ jobs:
         go mod tidy
     - name: Run build
       run: |
-        go build . 
+        go build .
     - name: Run testing
       run: |
-        go test -v ./...
+        go test -race -v ./...
     - name: Run vetting
       run: |
         go vet -v ./...

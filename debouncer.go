@@ -34,7 +34,9 @@ func (d *Debouncer) SendSignal() {
 	d.closeDone()
 	d.done.Store(make(chan struct{}))
 	d.timer = time.AfterFunc(d.timeDuration, func() {
+		d.mu.Lock()
 		d.triggeredFunc()
+		d.mu.Unlock()
 		d.closeDone()
 		d.done.Store(closedchan)
 	})
@@ -56,10 +58,13 @@ func (d *Debouncer) Cancel() {
 
 // UpdateTriggeredFunc replaces triggered function.
 func (d *Debouncer) UpdateTriggeredFunc(newTriggeredFunc func()) {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+
 	d.triggeredFunc = newTriggeredFunc
 }
 
-// UpdateTimeDuratioe replaces the waiting time duration. You need to call a SendSignal() again to trigger a new timer with a new waiting time duration.
+// UpdateTimeDuration replaces the waiting time duration. You need to call a SendSignal() again to trigger a new timer with a new waiting time duration.
 func (d *Debouncer) UpdateTimeDuration(newTimeDuration time.Duration) {
 	d.timeDuration = newTimeDuration
 }
