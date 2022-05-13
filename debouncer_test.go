@@ -5,11 +5,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/vnteamopen/godebouncer"
 	gd "github.com/vnteamopen/godebouncer"
 )
 
 func Example() {
-	debouncer := gd.New(
+	debouncer := gd.NewWithOptions(
 		gd.WithTimeDuration(5*time.Second),
 		gd.WithTriggered(func() {
 			// Triggered func will be called after 5 seconds from last SendSignal().
@@ -39,7 +40,7 @@ func createIncrementCount(counter int) (*int, func()) {
 
 func TestDebounceDoBeforeExpired(t *testing.T) {
 	countPtr, incrementCount := createIncrementCount(0)
-	debouncer := gd.New(
+	debouncer := gd.NewWithOptions(
 		gd.WithTimeDuration(200*time.Millisecond),
 		gd.WithTriggered(incrementCount),
 	)
@@ -64,7 +65,7 @@ func TestDebounceDoBeforeExpired(t *testing.T) {
 
 func TestDebounceDoAfterExpired(t *testing.T) {
 	countPtr, incrementCount := createIncrementCount(0)
-	debouncer := gd.New(
+	debouncer := gd.NewWithOptions(
 		gd.WithTimeDuration(2*time.Millisecond),
 		gd.WithTriggered(incrementCount),
 	)
@@ -89,7 +90,7 @@ func TestDebounceDoAfterExpired(t *testing.T) {
 
 func TestDebounceMixed(t *testing.T) {
 	countPtr, incrementCount := createIncrementCount(0)
-	debouncer := gd.New(
+	debouncer := gd.NewWithOptions(
 		gd.WithTimeDuration(200*time.Millisecond),
 		gd.WithTriggered(incrementCount),
 	)
@@ -117,7 +118,7 @@ func TestDebounceMixed(t *testing.T) {
 }
 
 func TestDebounceWithoutTriggeredFunc(t *testing.T) {
-	debouncer := gd.New(gd.WithTimeDuration(200 * time.Millisecond))
+	debouncer := gd.NewWithOptions(gd.WithTimeDuration(200 * time.Millisecond))
 
 	debouncer.Do(func() {
 		fmt.Println("Action 1")
@@ -129,7 +130,7 @@ func TestDebounceWithoutTriggeredFunc(t *testing.T) {
 
 func TestDebounceSendSignal(t *testing.T) {
 	countPtr, incrementCount := createIncrementCount(0)
-	debouncer := gd.New(
+	debouncer := gd.NewWithOptions(
 		gd.WithTimeDuration(200*time.Millisecond),
 		gd.WithTriggered(incrementCount),
 	)
@@ -145,7 +146,7 @@ func TestDebounceSendSignal(t *testing.T) {
 
 func TestDebounceUpdateTriggeredFuncBeforeDuration(t *testing.T) {
 	countPtr, incrementCount := createIncrementCount(0)
-	debouncer := gd.New(
+	debouncer := gd.NewWithOptions(
 		gd.WithTimeDuration(200*time.Millisecond),
 		gd.WithTriggered(incrementCount),
 	)
@@ -166,7 +167,7 @@ func TestDebounceUpdateTriggeredFuncBeforeDuration(t *testing.T) {
 
 func TestDebounceUpdateTriggeredFuncAfterDuration(t *testing.T) {
 	countPtr, incrementCount := createIncrementCount(0)
-	debouncer := gd.New(
+	debouncer := gd.NewWithOptions(
 		gd.WithTimeDuration(200*time.Millisecond),
 		gd.WithTriggered(incrementCount),
 	)
@@ -188,7 +189,7 @@ func TestDebounceUpdateTriggeredFuncAfterDuration(t *testing.T) {
 
 func TestDebounceCancel(t *testing.T) {
 	countPtr, incrementCount := createIncrementCount(0)
-	debouncer := gd.New(
+	debouncer := gd.NewWithOptions(
 		gd.WithTimeDuration(200*time.Millisecond),
 		gd.WithTriggered(incrementCount),
 	)
@@ -207,7 +208,7 @@ func TestDebounceCancel(t *testing.T) {
 
 func TestDebounceUpdateDuration(t *testing.T) {
 	countPtr, incrementCount := createIncrementCount(0)
-	debouncer := gd.New(
+	debouncer := gd.NewWithOptions(
 		gd.WithTimeDuration(600*time.Millisecond),
 		gd.WithTriggered(incrementCount),
 	)
@@ -224,7 +225,7 @@ func TestDebounceUpdateDuration(t *testing.T) {
 
 func TestDebounceUpdateDurationAfterSendSignal(t *testing.T) {
 	countPtr, incrementCount := createIncrementCount(0)
-	debouncer := gd.New(
+	debouncer := gd.NewWithOptions(
 		gd.WithTimeDuration(400*time.Millisecond),
 		gd.WithTriggered(incrementCount),
 	)

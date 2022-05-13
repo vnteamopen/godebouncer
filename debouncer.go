@@ -20,12 +20,12 @@ type Options struct {
 
 type DebouncerOptions func(*Debouncer)
 
-// func New(duration time.Duration) *Debouncer {
-// 	return &Debouncer{timeDuration: duration, triggeredFunc: func() {}, done: make(chan struct{})}
-// }
-
 // New creates a new instance of debouncer. Each instance of debouncer works independent, concurrency with different wait duration.
-func New(opts ...DebouncerOptions) *Debouncer {
+func New(duration time.Duration) *Debouncer {
+	return &Debouncer{timeDuration: duration, triggeredFunc: func() {}, done: make(chan struct{})}
+}
+
+func NewWithOptions(opts ...DebouncerOptions) *Debouncer {
 	var (
 		defaultDuration      = 1 * time.Minute
 		defaultOptions       = Options{leading: false, trailing: true}
@@ -36,16 +36,9 @@ func New(opts ...DebouncerOptions) *Debouncer {
 		timeDuration:  defaultDuration,
 		triggeredFunc: defaultTriggeredFunc,
 		options:       defaultOptions,
+		done:          make(chan struct{}),
 	}
 
-	for _, opt := range opts {
-		opt(d)
-	}
-
-	return d
-}
-
-func NewOptions(opts ...DebouncerOptions) *Debouncer {
 	for _, opt := range opts {
 		opt(d)
 	}
