@@ -45,6 +45,14 @@ func New(opts ...DebouncerOptions) *Debouncer {
 	return d
 }
 
+func NewOptions(opts ...DebouncerOptions) *Debouncer {
+	for _, opt := range opts {
+		opt(d)
+	}
+
+	return d
+}
+
 func WithOptions(options Options) DebouncerOptions {
 	return func(d *Debouncer) {
 		d.options = options
