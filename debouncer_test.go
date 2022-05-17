@@ -216,17 +216,60 @@ func TestDone(t *testing.T) {
 	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(incrementCount)
 	expectedCounter := int(2)
 
-	fmt.Println("Action 1")
-	debouncer.SendSignal()
-	time.Sleep(400 * time.Millisecond)
-
-	fmt.Println("Action 2")
 	debouncer.SendSignal()
 	<-debouncer.Done()
 
-	fmt.Println(len(debouncer.Done()))
+	debouncer.SendSignal()
+	<-debouncer.Done()
 
 	if *countPtr != expectedCounter {
 		t.Errorf("Expected count %d, was %d", expectedCounter, *countPtr)
+	}
+}
+
+func TestDoneInGoroutine(t *testing.T) {
+	countPtr, incrementCount := createIncrementCount(0)
+	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(incrementCount)
+	expectedCounter := int(3)
+
+	debouncer.SendSignal()
+	go func() {
+		<-debouncer.Done() // awaits for the second send signal to complete
+		*countPtr += 2
+	}()
+
+	debouncer.SendSignal() // after 200 milliseconds, unblock done channel in 2 goroutines
+	<-debouncer.Done()
+
+	time.Sleep(100 * time.Millisecond)
+
+	if *countPtr != expectedCounter {
+		t.Errorf("Expected count %d, was %d", expectedCounter, *countPtr)
+	}
+}
+
+func TestDoneBeforeAndAfterSendSignal(t *testing.T) {
+	countPtr, incrementCount := createIncrementCount(0)
+	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(incrementCount)
+	expectedCounter := int(1)
+
+	done := debouncer.Done()
+	select {
+	case <-done:
+		t.Error("done must hang since there is no signal")
+	case <-time.After(time.Second):
+	}
+
+	debouncer.SendSignal()
+	<-debouncer.Done()
+
+	if *countPtr != expectedCounter {
+		t.Errorf("Expected count %d, was %d", expectedCounter, *countPtr)
+	}
+
+	select {
+	case <-done:
+	case <-time.After(time.Second):
+		t.Error("done was not closed")
 	}
 }

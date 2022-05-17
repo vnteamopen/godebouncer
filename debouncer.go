@@ -2,6 +2,7 @@ package godebouncer
 
 import (
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -10,12 +11,12 @@ type Debouncer struct {
 	timer         *time.Timer
 	triggeredFunc func()
 	mu            sync.Mutex
-	done          chan struct{}
+	done          atomic.Value
 }
 
 // New creates a new instance of debouncer. Each instance of debouncer works independent, concurrency with different wait duration.
 func New(duration time.Duration) *Debouncer {
-	return &Debouncer{timeDuration: duration, triggeredFunc: func() {}, done: make(chan struct{})}
+	return &Debouncer{timeDuration: duration, triggeredFunc: func() {}}
 }
 
 // WithTriggered attached a triggered function to debouncer instance and return the same instance of debouncer to use.
@@ -32,7 +33,8 @@ func (d *Debouncer) SendSignal() {
 	d.Cancel()
 	d.timer = time.AfterFunc(d.timeDuration, func() {
 		d.triggeredFunc()
-		d.done <- struct{}{}
+		d.closeDone()
+		d.done.Store(make(chan struct{}))
 	})
 }
 
@@ -47,7 +49,6 @@ func (d *Debouncer) Cancel() {
 	if d.timer != nil {
 		d.timer.Stop()
 	}
-	d.done = make(chan struct{})
 }
 
 // UpdateTriggeredFunc replaces triggered function.
@@ -55,12 +56,26 @@ func (d *Debouncer) UpdateTriggeredFunc(newTriggeredFunc func()) {
 	d.triggeredFunc = newTriggeredFunc
 }
 
-// UpdateTimeDuratioe replaces the waiting time duration. You need to call a SendSignal() again to trigger a new timer with a new waiting time duration.
+// UpdateTimeDuration replaces the waiting time duration. You need to call a SendSignal() again to trigger a new timer with a new waiting time duration.
 func (d *Debouncer) UpdateTimeDuration(newTimeDuration time.Duration) {
 	d.timeDuration = newTimeDuration
 }
 
 // Done returns a receive-only channel to notify the caller when the triggered func has been executed.
 func (d *Debouncer) Done() <-chan struct{} {
-	return d.done
+	done := d.done.Load()
+	if done != nil {
+		return done.(chan struct{})
+	}
+
+	newDone := make(chan struct{})
+	d.done.Store(newDone)
+	return newDone
+}
+
+func (d *Debouncer) closeDone() {
+	done := d.done.Load()
+	if done != nil {
+		close(done.(chan struct{}))
+	}
 }
