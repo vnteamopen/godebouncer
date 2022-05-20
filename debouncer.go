@@ -2,7 +2,6 @@ package godebouncer
 
 import (
 	"sync"
-	"sync/atomic"
 	"time"
 )
 
@@ -11,7 +10,7 @@ type Debouncer struct {
 	timer         *time.Timer
 	triggeredFunc func()
 	mu            sync.Mutex
-	done          atomic.Value
+	done          chan struct{}
 }
 
 // New creates a new instance of debouncer. Each instance of debouncer works independent, concurrency with different wait duration.
@@ -33,8 +32,8 @@ func (d *Debouncer) SendSignal() {
 	d.Cancel()
 	d.timer = time.AfterFunc(d.timeDuration, func() {
 		d.triggeredFunc()
-		d.closeDone()
-		d.done.Store(make(chan struct{}))
+		close(d.done)
+		d.done = make(chan struct{})
 	})
 }
 
@@ -63,19 +62,8 @@ func (d *Debouncer) UpdateTimeDuration(newTimeDuration time.Duration) {
 
 // Done returns a receive-only channel to notify the caller when the triggered func has been executed.
 func (d *Debouncer) Done() <-chan struct{} {
-	done := d.done.Load()
-	if done != nil {
-		return done.(chan struct{})
+	if d.done == nil {
+		d.done = make(chan struct{})
 	}
-
-	newDone := make(chan struct{})
-	d.done.Store(newDone)
-	return newDone
-}
-
-func (d *Debouncer) closeDone() {
-	done := d.done.Load()
-	if done != nil {
-		close(done.(chan struct{}))
-	}
+	return d.done
 }

@@ -238,38 +238,33 @@ func TestDoneInGoroutine(t *testing.T) {
 		*countPtr += 2
 	}()
 
-	debouncer.SendSignal() // after 200 milliseconds, unblock done channel in 2 goroutines
+	debouncer.SendSignal() // after 1 milliseconds, unblock done channel in 2 goroutines
 	<-debouncer.Done()
 
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(200 * time.Millisecond)
 
 	if *countPtr != expectedCounter {
 		t.Errorf("Expected count %d, was %d", expectedCounter, *countPtr)
 	}
 }
 
-func TestDoneBeforeAndAfterSendSignal(t *testing.T) {
-	countPtr, incrementCount := createIncrementCount(0)
-	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(incrementCount)
-	expectedCounter := int(1)
-
-	done := debouncer.Done()
+func TestDoneHangBeforeSendSignal(t *testing.T) {
+	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(func() {})
 	select {
-	case <-done:
-		t.Error("done must hang since there is no signal")
+	case <-debouncer.Done():
+		t.Error("Done() must hang when being called before SendSignal()")
 	case <-time.After(time.Second):
 	}
+}
 
+func TestDoneHangIfBeingCalledTwice(t *testing.T) {
+	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(func() {})
 	debouncer.SendSignal()
 	<-debouncer.Done()
 
-	if *countPtr != expectedCounter {
-		t.Errorf("Expected count %d, was %d", expectedCounter, *countPtr)
-	}
-
 	select {
-	case <-done:
+	case <-debouncer.Done():
+		t.Error("Done() must hang if being called twice")
 	case <-time.After(time.Second):
-		t.Error("done was not closed")
 	}
 }
