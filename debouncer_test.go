@@ -216,17 +216,55 @@ func TestDone(t *testing.T) {
 	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(incrementCount)
 	expectedCounter := int(2)
 
-	fmt.Println("Action 1")
-	debouncer.SendSignal()
-	time.Sleep(400 * time.Millisecond)
-
-	fmt.Println("Action 2")
 	debouncer.SendSignal()
 	<-debouncer.Done()
 
-	fmt.Println(len(debouncer.Done()))
+	debouncer.SendSignal()
+	<-debouncer.Done()
 
 	if *countPtr != expectedCounter {
 		t.Errorf("Expected count %d, was %d", expectedCounter, *countPtr)
+	}
+}
+
+func TestDoneInGoroutine(t *testing.T) {
+	countPtr, incrementCount := createIncrementCount(0)
+	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(incrementCount)
+	expectedCounter := int(3)
+
+	debouncer.SendSignal()
+	go func() {
+		<-debouncer.Done() // awaits for the second send signal to complete
+		*countPtr += 2
+	}()
+
+	debouncer.SendSignal() // after 1 milliseconds, unblock done channel in 2 goroutines
+	<-debouncer.Done()
+
+	time.Sleep(200 * time.Millisecond)
+
+	if *countPtr != expectedCounter {
+		t.Errorf("Expected count %d, was %d", expectedCounter, *countPtr)
+	}
+}
+
+func TestDoneHangBeforeSendSignal(t *testing.T) {
+	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(func() {})
+	select {
+	case <-debouncer.Done():
+		t.Error("Done() must hang when being called before SendSignal()")
+	case <-time.After(time.Second):
+	}
+}
+
+func TestDoneHangIfBeingCalledTwice(t *testing.T) {
+	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(func() {})
+	debouncer.SendSignal()
+	<-debouncer.Done()
+
+	select {
+	case <-debouncer.Done():
+		t.Error("Done() must hang if being called twice")
+	case <-time.After(time.Second):
 	}
 }
