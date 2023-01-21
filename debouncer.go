@@ -32,7 +32,9 @@ func (d *Debouncer) SendSignal() {
 	d.Cancel()
 	d.timer = time.AfterFunc(d.timeDuration, func() {
 		d.triggeredFunc()
-		close(d.done)
+		if d.done != nil {
+			close(d.done)
+		}
 		d.done = make(chan struct{})
 	})
 }
