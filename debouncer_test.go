@@ -218,7 +218,6 @@ func TestDebounceLeading(t *testing.T) {
 		godebouncer.WithTriggered(incrementCount),
 		godebouncer.WithOptions(godebouncer.Options{Leading: true, Trailing: false}),
 	)
-
 	expectedCounter := 2
 
 	debouncer.SendSignal() // Called
@@ -230,33 +229,40 @@ func TestDebounceLeading(t *testing.T) {
 	debouncer.SendSignal()
 	<-debouncer.Done()
 
+	select {
+	case <-debouncer.Done():
+		t.Error("Done() must not be hang")
+	case <-time.After(time.Second):
+		break
+	}
+
 	if *countPtr != expectedCounter {
 		t.Errorf("Expected count %d, was %d", expectedCounter, *countPtr)
 	}
 }
 
 func TestDebounceOverlapped(t *testing.T) {
-	duration := 2000 * time.Millisecond
+	duration := 300 * time.Millisecond
 	countPtr, incrementCount := createIncrementCount(0)
 	debouncer := godebouncer.NewWithOptions(
 		godebouncer.WithTimeDuration(duration),
 		godebouncer.WithTriggered(incrementCount),
 		godebouncer.WithOptions(godebouncer.Options{Leading: true, Trailing: true}),
 	)
-
 	expectedCounter := 4
+
 	debouncer.SendSignal() // Called
 	debouncer.SendSignal()
 	debouncer.SendSignal()
 	debouncer.SendSignal()
 	debouncer.SendSignal()
-	debouncer.SendSignal() // 2
+	debouncer.SendSignal() // Called
 	<-debouncer.Done()
 	<-debouncer.Done()
 	time.Sleep(duration)
-	debouncer.SendSignal() // 3
+	debouncer.SendSignal() // Called
 	debouncer.SendSignal()
-	debouncer.SendSignal() // 4
+	debouncer.SendSignal() // Called
 	<-debouncer.Done()
 	<-debouncer.Done()
 
@@ -289,8 +295,9 @@ func TestDone(t *testing.T) {
 }
 
 func TestDoneInGoroutine(t *testing.T) {
+	duration := 200 * time.Millisecond
 	countPtr, incrementCount := createIncrementCount(0)
-	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(incrementCount)
+	debouncer := godebouncer.New(duration).WithTriggered(incrementCount)
 	expectedCounter := int(3)
 
 	debouncer.SendSignal()
@@ -302,7 +309,7 @@ func TestDoneInGoroutine(t *testing.T) {
 	debouncer.SendSignal() // after 1 milliseconds, unblock done channel in 2 goroutines
 	<-debouncer.Done()
 
-	time.Sleep(200 * time.Millisecond)
+	time.Sleep(duration)
 
 	if *countPtr != expectedCounter {
 		t.Errorf("Expected count %d, was %d", expectedCounter, *countPtr)
