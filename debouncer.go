@@ -35,6 +35,7 @@ func New(duration time.Duration) *Debouncer {
 	return &Debouncer{timeDuration: duration, triggeredFunc: func() {}, options: Options{false, true}}
 }
 
+// NewWithOptions takes a slice of option as the rest arguments and return a new instance of debouncer
 func NewWithOptions(opts ...DebouncerOptions) *Debouncer {
 	var (
 		defaultDuration      = 1 * time.Minute
@@ -98,16 +99,17 @@ func (d *Debouncer) SendSignal() {
 			d.timer = d.invokeTriggeredFunc()
 		}
 	case OVERLAPPED:
-		if d.signalCalledAt.IsZero() ||
-			(now.Sub(d.signalCalledAt) < d.timeDuration && d.signalCalledInDuration > 0) ||
-			now.Sub(d.signalCalledAt) > d.timeDuration {
+		if d.signalCalledAt.IsZero() || now.Sub(d.signalCalledAt) >= d.timeDuration {
+			d.timer = d.invokeTriggeredFunc()
+			break
+		}
+		if d.signalCalledInDuration > 0 {
 			if d.signalCalledInDuration > 1 {
 				d.Cancel()
 			}
 			d.timer = d.invokeTriggeredFunc()
-		} else {
-			d.signalCalledInDuration += 1
 		}
+		d.signalCalledInDuration += 1
 	default:
 	}
 
@@ -115,16 +117,18 @@ func (d *Debouncer) SendSignal() {
 
 func (d *Debouncer) invokeTriggeredFunc() *time.Timer {
 	d.signalCalledAt = time.Now()
-	d.signalCalledInDuration += 1
+
 	return time.AfterFunc(d.timeDuration, func() {
 		d.triggeredFunc()
 		if d.done != nil {
 			close(d.done)
 		}
 		d.done = make(chan struct{})
+		d.signalCalledInDuration = 0
 	})
 }
 
+// getDebounceType get the debouncer time based on Debouncer's options
 func (d *Debouncer) getDebounceType() DebouncerType {
 	if !d.options.Leading && d.options.Trailing {
 		return TRAILING

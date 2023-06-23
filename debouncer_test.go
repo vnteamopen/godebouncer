@@ -236,25 +236,36 @@ func TestDebounceLeading(t *testing.T) {
 }
 
 func TestDebounceOverlapped(t *testing.T) {
+	duration := 2000 * time.Millisecond
 	countPtr, incrementCount := createIncrementCount(0)
 	debouncer := godebouncer.NewWithOptions(
-		godebouncer.WithTimeDuration(300*time.Millisecond),
+		godebouncer.WithTimeDuration(duration),
 		godebouncer.WithTriggered(incrementCount),
 		godebouncer.WithOptions(godebouncer.Options{Leading: true, Trailing: true}),
 	)
 
-	expectedCounter := 3
+	expectedCounter := 4
 	debouncer.SendSignal() // Called
+	debouncer.SendSignal()
 	debouncer.SendSignal()
 	debouncer.SendSignal()
 	debouncer.SendSignal()
 	debouncer.SendSignal() // 2
 	<-debouncer.Done()
 	<-debouncer.Done()
-	time.Sleep(300 * time.Millisecond)
+	time.Sleep(duration)
 	debouncer.SendSignal() // 3
 	debouncer.SendSignal()
+	debouncer.SendSignal() // 4
 	<-debouncer.Done()
+	<-debouncer.Done()
+
+	select {
+	case <-debouncer.Done():
+		t.Error("Done() must not be hang")
+	case <-time.After(time.Second):
+		break
+	}
 
 	if *countPtr != expectedCounter {
 		t.Errorf("Expected count %d, was %d", expectedCounter, *countPtr)
