@@ -9,21 +9,20 @@ import (
 )
 
 func Example() {
-	wait := 5 * time.Second
-	debouncer := godebouncer.New(wait).WithTriggered(func() {
-		fmt.Println("Trigger") // Triggered func will be called after 5 seconds from last SendSignal().
-	})
-
-	fmt.Println("Action 1")
+	duration := 5 * time.Second
+	debouncer := godebouncer.NewWithOptions(
+		godebouncer.WithTimeDuration(duration),
+		godebouncer.WithTriggered(func() {
+			// Triggered func will be called after 5 seconds from last SendSignal()/Do().
+			fmt.Println("Trigger")
+		}),
+	)
 	debouncer.SendSignal()
-
 	time.Sleep(1 * time.Second)
-
-	fmt.Println("Action 2")
 	debouncer.SendSignal()
 
 	// After 5 seconds, the trigger will be called.
-	//Previous `SendSignal()` will be ignore to trigger the triggered function.
+	// Previous `SendSignal()` will be ignored to trigger the triggered function.
 	<-debouncer.Done()
 }
 
@@ -205,6 +204,34 @@ func TestDebounceUpdateDurationAfterSendSignal(t *testing.T) {
 
 	debouncer.UpdateTimeDuration(600 * time.Millisecond)
 	<-debouncer.Done()
+
+	if *countPtr != expectedCounter {
+		t.Errorf("Expected count %d, was %d", expectedCounter, *countPtr)
+	}
+}
+
+// Test Debounce Leading
+func TestDebounceLeading(t *testing.T) {
+	countPtr, incrementCount := createIncrementCount(0)
+	debouncer := godebouncer.NewWithOptions(
+		godebouncer.WithTimeDuration(300*time.Millisecond),
+		godebouncer.WithTriggered(incrementCount),
+		godebouncer.WithOptions(godebouncer.Options{Leading: true, Trailing: false}),
+	)
+
+	expectedCounter := 1
+
+	debouncer.SendSignal()
+	debouncer.SendSignal()
+	//debouncer.SendSignal()
+	<-debouncer.Done()
+	//time.Sleep(300 * time.Millisecond)
+	//debouncer.SendSignal()
+	//
+	//debouncer.SendSignal()
+	//debouncer.SendSignal()
+	//
+	//<-debouncer.Done()
 
 	if *countPtr != expectedCounter {
 		t.Errorf("Expected count %d, was %d", expectedCounter, *countPtr)
