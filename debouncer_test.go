@@ -210,28 +210,51 @@ func TestDebounceUpdateDurationAfterSendSignal(t *testing.T) {
 	}
 }
 
-// Test Debounce Leading
 func TestDebounceLeading(t *testing.T) {
+	duration := 300 * time.Millisecond
 	countPtr, incrementCount := createIncrementCount(0)
 	debouncer := godebouncer.NewWithOptions(
-		godebouncer.WithTimeDuration(300*time.Millisecond),
+		godebouncer.WithTimeDuration(duration),
 		godebouncer.WithTriggered(incrementCount),
 		godebouncer.WithOptions(godebouncer.Options{Leading: true, Trailing: false}),
 	)
 
-	expectedCounter := 1
+	expectedCounter := 2
 
+	debouncer.SendSignal() // Called
 	debouncer.SendSignal()
 	debouncer.SendSignal()
-	//debouncer.SendSignal()
 	<-debouncer.Done()
-	//time.Sleep(300 * time.Millisecond)
-	//debouncer.SendSignal()
-	//
-	//debouncer.SendSignal()
-	//debouncer.SendSignal()
-	//
-	//<-debouncer.Done()
+	time.Sleep(duration)
+	debouncer.SendSignal() // Called
+	debouncer.SendSignal()
+	<-debouncer.Done()
+
+	if *countPtr != expectedCounter {
+		t.Errorf("Expected count %d, was %d", expectedCounter, *countPtr)
+	}
+}
+
+func TestDebounceOverlapped(t *testing.T) {
+	countPtr, incrementCount := createIncrementCount(0)
+	debouncer := godebouncer.NewWithOptions(
+		godebouncer.WithTimeDuration(300*time.Millisecond),
+		godebouncer.WithTriggered(incrementCount),
+		godebouncer.WithOptions(godebouncer.Options{Leading: true, Trailing: true}),
+	)
+
+	expectedCounter := 3
+	debouncer.SendSignal() // Called
+	debouncer.SendSignal()
+	debouncer.SendSignal()
+	debouncer.SendSignal()
+	debouncer.SendSignal() // 2
+	<-debouncer.Done()
+	<-debouncer.Done()
+	time.Sleep(300 * time.Millisecond)
+	debouncer.SendSignal() // 3
+	debouncer.SendSignal()
+	<-debouncer.Done()
 
 	if *countPtr != expectedCounter {
 		t.Errorf("Expected count %d, was %d", expectedCounter, *countPtr)

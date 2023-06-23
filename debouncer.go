@@ -6,12 +6,14 @@ import (
 )
 
 type Debouncer struct {
-	timeDuration  time.Duration
-	timer         *time.Timer
-	triggeredFunc func()
-	mu            sync.Mutex
-	done          chan struct{}
-	options       Options
+	timeDuration           time.Duration
+	timer                  *time.Timer
+	triggeredFunc          func()
+	signalCalledAt         time.Time
+	signalCalledInDuration int
+	mu                     sync.Mutex
+	done                   chan struct{}
+	options                Options
 }
 type Options struct {
 	Leading, Trailing bool
@@ -23,9 +25,9 @@ type DebouncerType string
 
 const (
 	TRAILING   DebouncerType = "trailing"
-	LEADING                  = "leading"
-	OVERLAPPED               = "overlapped"
-	INACTIVE                 = "inactive"
+	LEADING    DebouncerType = "leading"
+	OVERLAPPED DebouncerType = "overlapped"
+	INACTIVE   DebouncerType = "inactive"
 )
 
 // New creates a new instance of debouncer. Each instance of debouncer works independent, concurrency with different wait duration.
@@ -85,26 +87,40 @@ func (d *Debouncer) WithTriggered(triggeredFunc func()) *Debouncer {
 func (d *Debouncer) SendSignal() {
 	d.mu.Lock()
 	defer d.mu.Unlock()
+	now := time.Now()
 
 	switch d.getDebounceType() {
 	case TRAILING:
 		d.Cancel()
 		d.timer = d.invokeTriggeredFunc()
 	case LEADING:
-		if d.timer != nil {
+		if d.signalCalledAt.IsZero() || now.Sub(d.signalCalledAt) > d.timeDuration {
 			d.timer = d.invokeTriggeredFunc()
 		}
 	case OVERLAPPED:
-		d.timer = d.invokeTriggeredFunc()
+		if d.signalCalledAt.IsZero() ||
+			(now.Sub(d.signalCalledAt) < d.timeDuration && d.signalCalledInDuration > 0) ||
+			now.Sub(d.signalCalledAt) > d.timeDuration {
+			if d.signalCalledInDuration > 1 {
+				d.Cancel()
+			}
+			d.timer = d.invokeTriggeredFunc()
+		} else {
+			d.signalCalledInDuration += 1
+		}
 	default:
 	}
 
 }
 
 func (d *Debouncer) invokeTriggeredFunc() *time.Timer {
+	d.signalCalledAt = time.Now()
+	d.signalCalledInDuration += 1
 	return time.AfterFunc(d.timeDuration, func() {
 		d.triggeredFunc()
-		close(d.done)
+		if d.done != nil {
+			close(d.done)
+		}
 		d.done = make(chan struct{})
 	})
 }
