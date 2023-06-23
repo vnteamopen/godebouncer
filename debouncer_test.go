@@ -36,7 +36,7 @@ func createIncrementCount(counter int) (*int, func()) {
 func TestDebounceDoBeforeExpired(t *testing.T) {
 	countPtr, incrementCount := createIncrementCount(0)
 	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(incrementCount)
-	expectedCounter := int(1)
+	expectedCounter := 1
 
 	debouncer.Do(func() {
 		fmt.Println("Action 1")
@@ -58,7 +58,7 @@ func TestDebounceDoBeforeExpired(t *testing.T) {
 func TestDebounceDoAfterExpired(t *testing.T) {
 	countPtr, incrementCount := createIncrementCount(0)
 	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(incrementCount)
-	expectedCounter := int(2)
+	expectedCounter := 2
 
 	debouncer.Do(func() {
 		fmt.Println("Action 1")
@@ -80,7 +80,7 @@ func TestDebounceDoAfterExpired(t *testing.T) {
 func TestDebounceMixed(t *testing.T) {
 	countPtr, incrementCount := createIncrementCount(0)
 	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(incrementCount)
-	expectedCounter := int(2)
+	expectedCounter := 2
 
 	debouncer.Do(func() {
 		fmt.Println("Action 1")
@@ -117,7 +117,7 @@ func TestDebounceWithoutTriggeredFunc(t *testing.T) {
 func TestDebounceSendSignal(t *testing.T) {
 	countPtr, incrementCount := createIncrementCount(0)
 	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(incrementCount)
-	expectedCounter := int(1)
+	expectedCounter := 1
 
 	debouncer.SendSignal()
 	<-debouncer.Done()
@@ -130,7 +130,7 @@ func TestDebounceSendSignal(t *testing.T) {
 func TestDebounceUpdateTriggeredFuncBeforeDuration(t *testing.T) {
 	countPtr, incrementCount := createIncrementCount(0)
 	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(incrementCount)
-	expectedCounter := int(2)
+	expectedCounter := 2
 
 	debouncer.SendSignal()
 	time.Sleep(50 * time.Millisecond)
@@ -148,7 +148,7 @@ func TestDebounceUpdateTriggeredFuncBeforeDuration(t *testing.T) {
 func TestDebounceUpdateTriggeredFuncAfterDuration(t *testing.T) {
 	countPtr, incrementCount := createIncrementCount(0)
 	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(incrementCount)
-	expectedCounter := int(3)
+	expectedCounter := 3
 
 	debouncer.SendSignal()
 	<-debouncer.Done()
@@ -167,7 +167,7 @@ func TestDebounceUpdateTriggeredFuncAfterDuration(t *testing.T) {
 func TestDebounceCancel(t *testing.T) {
 	countPtr, incrementCount := createIncrementCount(0)
 	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(incrementCount)
-	expectedCounter := int(0)
+	expectedCounter := 0
 
 	debouncer.SendSignal()
 	time.Sleep(50 * time.Millisecond)
@@ -183,7 +183,7 @@ func TestDebounceCancel(t *testing.T) {
 func TestDebounceUpdateDuration(t *testing.T) {
 	countPtr, incrementCount := createIncrementCount(0)
 	debouncer := godebouncer.New(600 * time.Millisecond).WithTriggered(incrementCount)
-	expectedCounter := int(1)
+	expectedCounter := 1
 
 	debouncer.UpdateTimeDuration(200 * time.Millisecond)
 	debouncer.SendSignal()
@@ -197,7 +197,7 @@ func TestDebounceUpdateDuration(t *testing.T) {
 func TestDebounceUpdateDurationAfterSendSignal(t *testing.T) {
 	countPtr, incrementCount := createIncrementCount(0)
 	debouncer := godebouncer.New(400 * time.Millisecond).WithTriggered(incrementCount)
-	expectedCounter := int(1)
+	expectedCounter := 1
 
 	debouncer.SendSignal()
 	time.Sleep(200 * time.Millisecond)
@@ -281,7 +281,7 @@ func TestDebounceOverlapped(t *testing.T) {
 func TestDone(t *testing.T) {
 	countPtr, incrementCount := createIncrementCount(0)
 	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(incrementCount)
-	expectedCounter := int(2)
+	expectedCounter := 2
 
 	debouncer.SendSignal()
 	<-debouncer.Done()
@@ -298,7 +298,7 @@ func TestDoneInGoroutine(t *testing.T) {
 	duration := 200 * time.Millisecond
 	countPtr, incrementCount := createIncrementCount(0)
 	debouncer := godebouncer.New(duration).WithTriggered(incrementCount)
-	expectedCounter := int(3)
+	expectedCounter := 3
 
 	debouncer.SendSignal()
 	go func() {
@@ -320,19 +320,19 @@ func TestDoneHangBeforeSendSignal(t *testing.T) {
 	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(func() {})
 	select {
 	case <-debouncer.Done():
-		t.Error("Done() must hang when being called before SendSignal()")
+		t.Error("Done() must not be hang before calling SendSignal()")
 	case <-time.After(time.Second):
 	}
 }
 
-func TestDoneHangIfBeingCalledTwice(t *testing.T) {
+func TestDoneHangAfterSendSignal(t *testing.T) {
 	debouncer := godebouncer.New(200 * time.Millisecond).WithTriggered(func() {})
 	debouncer.SendSignal()
-	<-debouncer.Done()
 
 	select {
 	case <-debouncer.Done():
-		t.Error("Done() must hang if being called twice")
+		break
 	case <-time.After(time.Second):
+		t.Error("Done() must be hang after calling SendSignal()")
 	}
 }
