@@ -6,16 +6,76 @@ import (
 )
 
 type Debouncer struct {
-	timeDuration  time.Duration
-	timer         *time.Timer
-	triggeredFunc func()
-	mu            sync.Mutex
-	done          chan struct{}
+	timeDuration           time.Duration
+	timer                  *time.Timer
+	triggeredFunc          func()
+	signalCalledAt         time.Time
+	signalCalledInDuration int
+	mu                     sync.Mutex
+	done                   chan struct{}
+	options                Options
 }
+type Options struct {
+	Leading, Trailing bool
+}
+
+type DebouncerOptions func(*Debouncer)
+
+type DebouncerType string
+
+const (
+	TRAILING   DebouncerType = "trailing"
+	LEADING    DebouncerType = "leading"
+	OVERLAPPED DebouncerType = "overlapped"
+	INACTIVE   DebouncerType = "inactive"
+)
 
 // New creates a new instance of debouncer. Each instance of debouncer works independent, concurrency with different wait duration.
 func New(duration time.Duration) *Debouncer {
-	return &Debouncer{timeDuration: duration, triggeredFunc: func() {}}
+	return &Debouncer{timeDuration: duration, triggeredFunc: func() {}, options: Options{false, true}}
+}
+
+// NewWithOptions takes a slice of option as the rest arguments and return a new instance of debouncer
+func NewWithOptions(opts ...DebouncerOptions) *Debouncer {
+	var (
+		defaultDuration      = 1 * time.Minute
+		defaultOptions       = Options{false, true}
+		defaultTriggeredFunc = func() {}
+	)
+
+	d := &Debouncer{
+		timeDuration:  defaultDuration,
+		triggeredFunc: defaultTriggeredFunc,
+		options:       defaultOptions,
+		done:          make(chan struct{}),
+	}
+
+	for _, opt := range opts {
+		opt(d)
+	}
+
+	return d
+}
+
+// WithOptions sets the options of debouncer instance.
+func WithOptions(options Options) DebouncerOptions {
+	return func(d *Debouncer) {
+		d.options = options
+	}
+}
+
+// WithTriggered sets the triggered function of debouncer instance.
+func WithTriggered(triggeredFunc func()) DebouncerOptions {
+	return func(d *Debouncer) {
+		d.triggeredFunc = triggeredFunc
+	}
+}
+
+// WithTimeDuration sets the time duration of debouncer instance.
+func WithTimeDuration(timeDuration time.Duration) DebouncerOptions {
+	return func(d *Debouncer) {
+		d.timeDuration = timeDuration
+	}
 }
 
 // WithTriggered attached a triggered function to debouncer instance and return the same instance of debouncer to use.
@@ -28,13 +88,61 @@ func (d *Debouncer) WithTriggered(triggeredFunc func()) *Debouncer {
 func (d *Debouncer) SendSignal() {
 	d.mu.Lock()
 	defer d.mu.Unlock()
+	now := time.Now()
 
-	d.Cancel()
-	d.timer = time.AfterFunc(d.timeDuration, func() {
+	switch d.getDebounceType() {
+	case TRAILING:
+		d.Cancel()
+		d.timer = d.invokeTriggeredFunc()
+	case LEADING:
+		if d.signalCalledAt.IsZero() || now.Sub(d.signalCalledAt) > d.timeDuration {
+			d.timer = d.invokeTriggeredFunc()
+		}
+	case OVERLAPPED:
+		if d.signalCalledAt.IsZero() || now.Sub(d.signalCalledAt) >= d.timeDuration {
+			d.timer = d.invokeTriggeredFunc()
+			break
+		}
+		if d.signalCalledInDuration > 0 {
+			if d.signalCalledInDuration > 1 {
+				d.Cancel()
+			}
+			d.timer = d.invokeTriggeredFunc()
+		}
+		d.signalCalledInDuration += 1
+	default:
+	}
+
+}
+
+func (d *Debouncer) invokeTriggeredFunc() *time.Timer {
+	d.signalCalledAt = time.Now()
+
+	return time.AfterFunc(d.timeDuration, func() {
 		d.triggeredFunc()
-		close(d.done)
+		if d.done != nil {
+			close(d.done)
+		}
 		d.done = make(chan struct{})
+		d.signalCalledInDuration = 0
 	})
+}
+
+// getDebounceType get the debouncer time based on Debouncer's options
+func (d *Debouncer) getDebounceType() DebouncerType {
+	if !d.options.Leading && d.options.Trailing {
+		return TRAILING
+	}
+
+	if d.options.Leading && !d.options.Trailing {
+		return LEADING
+	}
+
+	if d.options.Leading && d.options.Trailing {
+		return OVERLAPPED
+	}
+
+	return INACTIVE
 }
 
 // Do run the signalFunc() and call SendSignal() after all. The signalFunc() and SendSignal() function run sequentially.
