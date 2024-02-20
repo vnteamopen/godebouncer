@@ -119,6 +119,8 @@ func (d *Debouncer) invokeTriggeredFunc() *time.Timer {
 	d.signalCalledAt = time.Now()
 
 	return time.AfterFunc(d.timeDuration, func() {
+		d.mu.Lock()
+		defer d.mu.Unlock()
 		d.triggeredFunc()
 		if d.done != nil {
 			close(d.done)
@@ -170,6 +172,8 @@ func (d *Debouncer) UpdateTimeDuration(newTimeDuration time.Duration) {
 
 // Done returns a receive-only channel to notify the caller when the triggered func has been executed.
 func (d *Debouncer) Done() <-chan struct{} {
+	d.mu.Lock()
+	defer d.mu.Unlock()
 	if d.done == nil {
 		d.done = make(chan struct{})
 	}
